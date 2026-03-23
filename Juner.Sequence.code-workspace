@@ -5,12 +5,20 @@
 			"path": ".",
 		},
 		{
+			"name": "Juner.Sequence",
+			"path": "./Sequence",
+		},
+		{
 			"name": "Juner.AspNetCore.Sequence",
 			"path": "./AspNetCore.Sequence",
 		},
 		{
 			"name": "Juner.AspNetCore.Sequence.Tests",
 			"path": "./AspNetCore.Sequence.Tests",
+		},
+		{
+			"name": "Juner.HttpClient.Sequence",
+			"path": "./HttpClient.Sequence",
 		},
 		{
 			"name": "samples",
@@ -24,8 +32,10 @@
 			"**/.hg": true,
 			"**/.DS_Store": true,
 			"**/Thumbs.db": true,
+			"Sequence": true,
 			"AspNetCore.Sequence": true,
 			"AspNetCore.Sequence.Tests": true,
+			"HttpClient.Sequence": true,
 			"samples": true,
 		},
 		"explorer.fileNesting.enabled": true,

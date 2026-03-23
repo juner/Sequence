@@ -10,8 +10,8 @@
 Supports NDJSON, JSON Lines, JSON Sequence, and JSON arrays using IAsyncEnumerable.</Description>
     <PackageTags>aspnetcore;streaming;json;ndjson;jsonlines;json-seq;iasyncenumerable</PackageTags>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/juner/Juner.AspNetCore.Sequence</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/juner/Juner.AspNetCore.Sequence</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/juner/Sequence</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/juner/Sequence</PackageProjectUrl>
     <PackAsTool>True</PackAsTool>
     <FileVersion>1.0.0.1</FileVersion>
     <AssemblyVersion>1.0.0.1</AssemblyVersion>

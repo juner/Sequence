@@ -1,6 +1,6 @@
 <Solution>
-  <Folder Name="/samples/Properties/">
-    <File Path="samples/Properties/launchSettings.json" />
+  <Folder Name="/samples/AspNetCore/Properties/">
+    <File Path="samples/AspNetCore/Properties/launchSettings.json" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -10,13 +10,15 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/samples/">
-    <File Path="samples/appsettings.Development.json" />
-    <File Path="samples/appsettings.json" />
-    <File Path="samples/MinimalApiJsonSequenceStreamingSample.cs" />
-    <File Path="samples/MvcJsonSequenceStreamingSample.cs" />
+  <Folder Name="/samples/AspNetCore/">
+    <File Path="samples/AspNetCore/appsettings.Development.json" />
+    <File Path="samples/AspNetCore/appsettings.json" />
+    <File Path="samples/AspNetCore/MinimalApiJsonSequenceStreamingSample.cs" />
+    <File Path="samples/AspNetCore/MvcJsonSequenceStreamingSample.cs" />
 
   </Folder>
   <Project Path="AspNetCore.Sequence.Tests/Juner.AspNetCore.Sequence.Tests.csproj" />
   <Project Path="AspNetCore.Sequence/Juner.AspNetCore.Sequence.csproj" />
+  <Project Path="HttpClient.Sequence/Juner.HttpClient.Sequence.csproj" />
+  <Project Path="Sequence/Juner.Sequence.csproj" />
 </Solution>
