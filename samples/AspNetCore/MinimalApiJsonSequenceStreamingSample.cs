@@ -1,6 +1,6 @@
 #!/usr/local/share/dotnet/dotnet run
 #:sdk Microsoft.NET.Sdk.Web
-#:project ../Sequence/Juner.AspNetCore.Sequence.csproj
+#:project ../../AspNetCore.Sequence/Juner.AspNetCore.Sequence.csproj
 #:property UserSecretsId=DaiwaHouseUketsuke.Web       
 #:property RootNamespace=Juner.AspNetCore.Sequence.Sample.MinimalApiJsonSequenceStreamingSample
 #:property TargetFramework=net10.0

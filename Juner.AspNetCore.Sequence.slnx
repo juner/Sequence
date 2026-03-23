@@ -17,6 +17,6 @@
     <File Path="samples/MvcJsonSequenceStreamingSample.cs" />
 
   </Folder>
-  <Project Path="Sequence.Tests/Juner.AspNetCore.Sequence.Tests.csproj" />
-  <Project Path="Sequence/Juner.AspNetCore.Sequence.csproj" />
+  <Project Path="AspNetCore.Sequence.Tests/Juner.AspNetCore.Sequence.Tests.csproj" />
+  <Project Path="AspNetCore.Sequence/Juner.AspNetCore.Sequence.csproj" />
 </Solution>

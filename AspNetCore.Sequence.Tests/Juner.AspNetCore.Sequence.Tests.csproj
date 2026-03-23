@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sequence\Juner.AspNetCore.Sequence.csproj" />
+    <ProjectReference Include="..\AspNetCore.Sequence\Juner.AspNetCore.Sequence.csproj" />
   </ItemGroup>
 
   <ItemGroup>
