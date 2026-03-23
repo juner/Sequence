@@ -10,6 +10,7 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/samples/" />
   <Folder Name="/samples/AspNetCore/">
     <File Path="samples/AspNetCore/appsettings.Development.json" />
     <File Path="samples/AspNetCore/appsettings.json" />
@@ -20,5 +21,6 @@
   <Project Path="AspNetCore.Sequence.Tests/Juner.AspNetCore.Sequence.Tests.csproj" />
   <Project Path="AspNetCore.Sequence/Juner.AspNetCore.Sequence.csproj" />
   <Project Path="HttpClient.Sequence/Juner.HttpClient.Sequence.csproj" />
+  <Project Path="Sequence.Tests/Juner.Sequence.Tests.csproj" Id="8905034c-4a58-49b8-8531-b158bb72878d" />
   <Project Path="Sequence/Juner.Sequence.csproj" />
 </Solution>

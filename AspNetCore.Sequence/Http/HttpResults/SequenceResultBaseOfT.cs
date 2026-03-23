@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Juner.Sequence;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -51,9 +52,7 @@ public abstract partial class SequenceResultBase<T> : IStatusCodeHttpResult, ISe
 
     public SequenceResultBase(ChannelReader<T> values) => _values = values;
 
-    protected abstract ReadOnlyMemory<byte> Begin { get; }
-
-    protected abstract ReadOnlyMemory<byte> End { get; }
+    protected abstract ISequenceSerializerWriteOptions Options { get; }
 
     int? IStatusCodeHttpResult.StatusCode => StatusCode;
 

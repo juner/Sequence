@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Net.Mime;
+using Juner.Sequence;
 
 #if !NET8_0_OR_GREATER
 using System.Text.Json.Serialization.Metadata;
@@ -48,8 +49,7 @@ public partial class SequenceResult<T> : IResult
             httpContext,
             _contentType,
             out var contentType,
-            out var begin,
-            out var end))
+            out var options))
             throw new InvalidOperationException();
 
         httpContext.Response.ContentType = contentType;
@@ -60,7 +60,7 @@ public partial class SequenceResult<T> : IResult
 #endif
         var values = ToAsyncEnumerable(httpContext.RequestAborted);
 
-        if (contentType == MediaTypeNames.Application.Json)
+        if (options.IsEmpty)
         {
             var jsonTypeInfo = serializerOptions.GetTypeInfo<IAsyncEnumerable<T>>();
 
@@ -75,15 +75,11 @@ public partial class SequenceResult<T> : IResult
 
         var elementTypeInfo = serializerOptions.GetTypeInfo<T>();
 
-        await InternalFormatWriter.WriteAsyncFromAsyncEnumerable(
+        await SequenceSerializer.SerializeAsync(
+            httpContext.Response.BodyWriter,
             values,
-            httpContext,
             elementTypeInfo,
-            serializerOptions,
-            Encoding.UTF8,
-            logger,
-            begin,
-            end,
+            options,
             httpContext.RequestAborted);
     }
 

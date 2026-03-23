@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
-using System.Threading.Channels;
 using System.Diagnostics;
+using Juner.Sequence;
 
 
 #if !NET8_0_OR_GREATER
@@ -54,52 +53,13 @@ public abstract partial class SequenceResultBase<T> : IResult
         serializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();
 #endif
         var jsonTypeInfo = serializerOptions.GetTypeInfo<T>();
-        if (_values is IAsyncEnumerable<T> asyncValues)
-        {
-            await InternalFormatWriter
-                .WriteAsyncFromAsyncEnumerable(
-                    values: asyncValues,
-                    httpContext: httpContext,
-                    SerializerOptions: serializerOptions,
-                    JsonTypeInfo: jsonTypeInfo,
-                    Begin: Begin,
-                    End: End,
-                    SelectedEncoding: Encoding.UTF8,
-                    logger: logger,
-                    cancellationToken: httpContext.RequestAborted
-                );
-            return;
-        }
-        else if (_values is IEnumerable<T> values)
-        {
-            await InternalFormatWriter
-                .WriteAsyncFromEnumerable(
-                    values: values,
-                    httpContext: httpContext,
-                    SerializerOptions: serializerOptions,
-                    JsonTypeInfo: jsonTypeInfo,
-                    Begin: Begin,
-                    End: End,
-                    SelectedEncoding: Encoding.UTF8,
-                    logger: logger,
-                    cancellationToken: httpContext.RequestAborted
-                );
-            return;
-        }
-        else if (_values is ChannelReader<T> channelReader)
-        {
-            await InternalFormatWriter
-                .WriteAsyncFromChannelReader(
-                    values: channelReader,
-                    httpContext: httpContext,
-                    SerializerOptions: serializerOptions,
-                    JsonTypeInfo: jsonTypeInfo,
-                    Begin: Begin,
-                    End: End,
-                    SelectedEncoding: Encoding.UTF8,
-                    logger: logger,
-                    cancellationToken: httpContext.RequestAborted
-                );
-        }
+        var cancellationToken = httpContext.RequestAborted;
+        var values = ToAsyncEnumerable(cancellationToken);
+        await SequenceSerializer.SerializeAsync(
+            httpContext.Response.BodyWriter,
+            values,
+            jsonTypeInfo,
+            Options,
+            cancellationToken);
     }
 }

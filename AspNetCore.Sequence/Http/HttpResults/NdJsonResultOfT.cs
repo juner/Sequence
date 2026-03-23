@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Juner.Sequence;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using System.Reflection;
@@ -25,13 +26,7 @@ public sealed class NdJsonResult<T> : SequenceResultBase<T>, IEndpointMetadataPr
 
     public NdJsonResult(ChannelReader<T> values) : base(values) { }
 
-    protected override ReadOnlyMemory<byte> Begin => default;
-
-    #region LF
-    static ReadOnlyMemory<byte>? _lf;
-    static ReadOnlyMemory<byte> LF => _lf ??= "\n"u8.ToArray();
-    #endregion
-    protected override ReadOnlyMemory<byte> End => LF;
+    protected override ISequenceSerializerWriteOptions Options => SequenceSerializerOptions.JsonLines;
 
     #region StatusCode
     const int STATUS_CODE = StatusCodes.Status200OK;

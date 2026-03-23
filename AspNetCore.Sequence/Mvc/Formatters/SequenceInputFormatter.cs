@@ -1,4 +1,5 @@
 ﻿using Juner.AspNetCore.Sequence.Internals;
+using Juner.Sequence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +53,7 @@ public partial class SequenceInputFormatter : TextInputFormatter
         if (!MediaTypeHeaderValue.TryParse(context.HttpContext.Request.ContentType!, out var parsedValue))
             return false;
         var mediaType = parsedValue.MediaType;
-        if (!TryGetSequenceType(mediaType, out _, out _))
+        if (!TryGetSequenceType(mediaType, out _))
             return false;
         return true;
     }
@@ -96,7 +97,7 @@ public partial class SequenceInputFormatter : TextInputFormatter
             return await InputFormatterResult.FailureAsync();
 
         var mediaType = parsedValue.MediaType;
-        if (!TryGetSequenceType(mediaType, out var start, out var end))
+        if (!TryGetSequenceType(mediaType, out var options))
             return await InputFormatterResult.FailureAsync();
 
         var jsonTypeInfo = serializerOptions.GetTypeInfo(elementType);
@@ -106,8 +107,7 @@ public partial class SequenceInputFormatter : TextInputFormatter
             enumerableType,
             request.BodyReader,
             jsonTypeInfo,
-            start,
-            end,
+            options,
             cancellationToken);
 
         if (result is Task task)
@@ -119,21 +119,18 @@ public partial class SequenceInputFormatter : TextInputFormatter
         return await InputFormatterResult.SuccessAsync(result);
     }
 
-    static bool TryGetSequenceType(StringSegment mediaType, [NotNullWhen(true)] out ReadOnlyMemory<byte>[] start, [NotNullWhen(true)] out ReadOnlyMemory<byte>[] end)
+    static bool TryGetSequenceType(StringSegment mediaType, [NotNullWhen(true)] out ISequenceSerializerReadOptions? options)
     {
-        start = default!;
-        end = default!;
+        options = default;
         if (mediaType.Equals(ContentTypeJsonSequence, StringComparison.OrdinalIgnoreCase))
         {
-            start = JSONSEQ_START;
-            end = JSONSEQ_END;
+            options = SequenceSerializerOptions.JsonSequence;
             return true;
         }
         if (mediaType.Equals(ContentTypeNdJson, StringComparison.OrdinalIgnoreCase)
             || mediaType.Equals(ContentTypeJsonLine, StringComparison.OrdinalIgnoreCase))
         {
-            start = NDJSON_START;
-            end = NDJSON_END;
+            options = SequenceSerializerOptions.JsonLines;
             return true;
         }
         return false;

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Juner.Sequence;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using System.Reflection;
 using System.Threading.Channels;
+
 
 #if NET8_0_OR_GREATER
 using System.Net.Mime;
@@ -26,18 +28,7 @@ public sealed class JsonSequenceResult<T> : SequenceResultBase<T>, IEndpointMeta
 
     public JsonSequenceResult(ChannelReader<T> values) : base(values) { }
 
-    #region RS
-    static ReadOnlyMemory<byte>? _rs;
-    static ReadOnlyMemory<byte> RS => _rs ??= "\u001e"u8.ToArray();
-    #endregion
-
-    protected override ReadOnlyMemory<byte> Begin => RS;
-
-    #region LF
-    static ReadOnlyMemory<byte>? _lf;
-    static ReadOnlyMemory<byte> LF => _lf ??= "\n"u8.ToArray();
-    #endregion
-    protected override ReadOnlyMemory<byte> End => LF;
+    protected override ISequenceSerializerWriteOptions Options => SequenceSerializerOptions.JsonSequence;
 
     #region StatusCode
     const int STATUS_CODE = StatusCodes.Status200OK;

@@ -1,4 +1,4 @@
-﻿using Juner.AspNetCore.Sequence.Internals;
+﻿using Juner.Sequence;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,19 +60,6 @@ public partial class Sequence<T> : IBindableFromHttpContext<Sequence<T>>
 
     #region MakePatternAction
 
-    #region delimiters
-
-    static readonly byte[] RS = [.. "\u001e"u8];
-    static readonly byte[] LF = [.. "\n"u8];
-
-    static readonly ReadOnlyMemory<byte>[] JSONSEQ_START = [RS];
-    static readonly ReadOnlyMemory<byte>[] JSONSEQ_END = [LF];
-
-    static readonly ReadOnlyMemory<byte>[] NDJSON_START = [];
-    static readonly ReadOnlyMemory<byte>[] NDJSON_END = [LF];
-
-    #endregion
-
     static PatternAction[]? _makePatternActionList = null;
     static PatternAction[] MakePatternActionList => _makePatternActionList ??= [.. MakePatternActions()];
 
@@ -97,11 +84,10 @@ public partial class Sequence<T> : IBindableFromHttpContext<Sequence<T>>
             {
                 if ((mediaTypeHeaderValue.Encoding ?? Encoding.UTF8).CodePage != Encoding.UTF8.CodePage)
                     throw new NotSupportedException($"{mediaTypeHeaderValue.MediaType} is not support charset");
-                return new Sequence<T>(InternalFormatReader.GetAsyncEnumerable(
+                return new Sequence<T>(SequenceSerializer.DeserializeAsyncEnumerable(
                     request.BodyReader,
                     jsonTypeInfo,
-                    JSONSEQ_START,
-                    JSONSEQ_END,
+                    SequenceSerializerOptions.JsonSequence,
                     cancellationToken));
             }
         }
@@ -123,11 +109,10 @@ public partial class Sequence<T> : IBindableFromHttpContext<Sequence<T>>
                 if ((mediaTypeHeaderValue.Encoding ?? Encoding.UTF8).CodePage != Encoding.UTF8.CodePage)
                     throw new NotSupportedException($"{mediaTypeHeaderValue.MediaType} is not support charset");
 
-                return new(InternalFormatReader.GetAsyncEnumerable(
+                return new(SequenceSerializer.DeserializeAsyncEnumerable(
                     request.BodyReader,
                     jsonTypeInfo,
-                    NDJSON_START,
-                    NDJSON_END,
+                    SequenceSerializerOptions.JsonLines,
                     cancellationToken));
             }
         }

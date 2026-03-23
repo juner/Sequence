@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
+using Juner.Sequence;
+
 
 #if NET8_0_OR_GREATER
 using System.Net.Mime;
@@ -89,9 +91,7 @@ public partial class NdJsonOutputFormatter : TextOutputFormatter
             serializerOptions: serializerOptions,
             httpContext: context.HttpContext,
             selectedEncoding: selectedEncoding,
-            begin: default,
-            end: LF,
-            logger: logger,
+            options: SequenceSerializerOptions.JsonLines,
             cancellationToken: cancellationToken);
     }
 

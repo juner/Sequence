@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Juner.Sequence;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -114,17 +116,16 @@ public partial class SequenceResult<T> : IStatusCodeHttpResult, ISequenceHttpRes
             [.. MakePatternList.Select(v => new Content(v.ContentType, v.IsStreaming))]));
     }
 
-    record MakePattern(string ContentType, ReadOnlyMemory<byte> Begin, ReadOnlyMemory<byte> End, bool IsStreaming);
-    static bool TryGetPattern(StringSegment contentType, out ReadOnlyMemory<byte> begin, out ReadOnlyMemory<byte> end)
+    record MakePattern(string ContentType, ISequenceSerializerWriteOptions Options, bool IsStreaming);
+    static bool TryGetPattern(StringSegment contentType, [NotNullWhen(true)] out ISequenceSerializerWriteOptions? options)
     {
-        begin = default;
-        end = default;
+        options = null;
         if (!MediaTypeHeaderValue.TryParse(contentType, out var parsedValue))
             return false;
-        foreach (var (mediaType, begin2, end2, _) in MakePatternList)
+        foreach (var (mediaType, options2, _) in MakePatternList)
             if (parsedValue.MediaType.Equals(mediaType, StringComparison.OrdinalIgnoreCase) == true)
             {
-                (begin, end) = (begin2, end2);
+                options = options2;
                 return true;
             }
 
@@ -134,11 +135,9 @@ public partial class SequenceResult<T> : IStatusCodeHttpResult, ISequenceHttpRes
         HttpContext ctx,
         string defaultContentType,
         out string selectedContentType,
-        out ReadOnlyMemory<byte> begin,
-        out ReadOnlyMemory<byte> end)
+        [NotNullWhen(true)] out ISequenceSerializerWriteOptions? options)
     {
-        begin = default;
-        end = default;
+        options = default;
         selectedContentType = defaultContentType;
 
         var accepts = MediaTypeHeaderValue.ParseList(ctx.Request.Headers.Accept);
@@ -147,19 +146,19 @@ public partial class SequenceResult<T> : IStatusCodeHttpResult, ISequenceHttpRes
         {
             foreach (var accept in accepts.OrderByDescending(a => a.Quality ?? 1))
             {
-                if (TryGetPattern(accept.MediaType, out begin, out end))
+                if (TryGetPattern(accept.MediaType, out options))
                 {
                     selectedContentType = accept.MediaType.ToString();
                     return true;
                 }
                 if (accept.MediaType == "*/*")
                 {
-                    return TryGetPattern(defaultContentType, out begin, out end);
+                    return TryGetPattern(defaultContentType, out options);
                 }
             }
             return false;
         }
-        return TryGetPattern(defaultContentType, out begin, out end);
+        return TryGetPattern(defaultContentType, out options);
     }
     static MakePattern[]? _makePatternList;
     static MakePattern[] MakePatternList => _makePatternList ??= [.. MakePatterns()];
@@ -175,22 +174,22 @@ public partial class SequenceResult<T> : IStatusCodeHttpResult, ISequenceHttpRes
 #else
                 "application/json-seq";
 #endif
-            yield return new(contentType, RS, LF, true);
+            yield return new(contentType, SequenceSerializerOptions.JsonSequence, true);
         }
         {
             const string contentType =
                 "application/x-ndjson";
-            yield return new(contentType, default, LF, true);
+            yield return new(contentType, SequenceSerializerOptions.JsonLines, true);
         }
         {
             const string contentType =
                 "application/jsonl";
-            yield return new(contentType, default, LF, true);
+            yield return new(contentType, SequenceSerializerOptions.JsonLines, true);
         }
         {
             const string contentType =
                 "application/json";
-            yield return new(contentType, default, default, false);
+            yield return new(contentType, SequenceSerializerOptions.Empty, false);
         }
 
     }

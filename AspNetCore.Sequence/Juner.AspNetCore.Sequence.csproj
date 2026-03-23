@@ -54,4 +54,8 @@ Supports NDJSON, JSON Lines, JSON Sequence, and JSON arrays using IAsyncEnumerab
     <InternalsVisibleTo Include="Juner.AspNetCore.Sequence.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Sequence\Juner.Sequence.csproj" />
+  </ItemGroup>
+
 </Project>
