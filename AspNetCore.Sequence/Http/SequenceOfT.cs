@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
 namespace Juner.AspNetCore.Sequence.Http;
@@ -13,13 +14,13 @@ public sealed partial class Sequence<T> : IAsyncEnumerable<T>, IEndpointParamete
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         => _values switch
         {
-            IAsyncEnumerable<T> asyncEnumerable => asyncEnumerable.GetAsyncEnumerator(),
-            ChannelReader<T> channelReader => GetAsyncEnumerator(channelReader, cancellationToken),
-            IEnumerable<T> enumerable => GetAsyncEnumerator(enumerable),
-            _ => GetAsyncEnumerator(),
+            IAsyncEnumerable<T> asyncEnumerable => asyncEnumerable.GetAsyncEnumerator(cancellationToken),
+            ChannelReader<T> channelReader => ChunnelReaderAsyncEnumerator(channelReader, cancellationToken),
+            IEnumerable<T> enumerable => EnumerableAsyncEnumerator(enumerable),
+            _ => EmptyAsyncEnumerator(),
         };
 
-    static async IAsyncEnumerator<T> GetAsyncEnumerator(ChannelReader<T> channelReader, CancellationToken cancellationToken)
+    static async IAsyncEnumerator<T> ChunnelReaderAsyncEnumerator(ChannelReader<T> channelReader, CancellationToken cancellationToken)
     {
         while (await channelReader.WaitToReadAsync(cancellationToken))
             if (channelReader.TryRead(out var item))
@@ -27,12 +28,12 @@ public sealed partial class Sequence<T> : IAsyncEnumerable<T>, IEndpointParamete
         yield break;
     }
 
-    static async IAsyncEnumerator<T> GetAsyncEnumerator(IEnumerable<T> enumerable)
+    static async IAsyncEnumerator<T> EnumerableAsyncEnumerator(IEnumerable<T> enumerable)
     {
         foreach (var item in enumerable)
             yield return item;
     }
-    static async IAsyncEnumerator<T> GetAsyncEnumerator()
+    static async IAsyncEnumerator<T> EmptyAsyncEnumerator()
     {
         yield break;
     }

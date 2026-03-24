@@ -20,7 +20,8 @@
   </Folder>
   <Project Path="AspNetCore.Sequence.Tests/Juner.AspNetCore.Sequence.Tests.csproj" />
   <Project Path="AspNetCore.Sequence/Juner.AspNetCore.Sequence.csproj" />
-  <Project Path="HttpClient.Sequence/Juner.HttpClient.Sequence.csproj" />
+  <Project Path="Http.Sequence/Juner.Http.Sequence.csproj" />
+  <Project Path="Http.Sequence.Tests/Juner.Http.Sequence.Tests.csproj" Id="2b01308b-2eb2-4049-98ca-8603959f544d" />
   <Project Path="Sequence.Tests/Juner.Sequence.Tests.csproj" Id="8905034c-4a58-49b8-8531-b158bb72878d" />
   <Project Path="Sequence/Juner.Sequence.csproj" />
 </Solution>

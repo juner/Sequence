@@ -1,11 +1,12 @@
 ﻿using Juner.AspNetCore.Sequence.Http.HttpResults;
+using Microsoft.AspNetCore.Http;
 using System.Threading.Channels;
 
 namespace Juner.AspNetCore.Sequence.Http;
 
 public static class TypedResultsExtensions
 {
-    extension(Microsoft.AspNetCore.Http.TypedResults)
+    extension(TypedResults)
     {
         public static JsonSequenceResult<T> JsonSequence<T>(IAsyncEnumerable<T> values) => SequenceResults.JsonSequence(values);
         public static JsonSequenceResult<T> JsonSequence<T>(IEnumerable<T> values) => SequenceResults.JsonSequence(values);

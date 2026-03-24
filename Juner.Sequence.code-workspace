@@ -21,8 +21,12 @@
 			"path": "./AspNetCore.Sequence.Tests",
 		},
 		{
-			"name": "Juner.HttpClient.Sequence",
-			"path": "./HttpClient.Sequence",
+			"name": "Juner.Http.Sequence",
+			"path": "./Http.Sequence",
+		},
+		{
+			"name": "Juner.Http.Sequence.Tests",
+			"path": "./Http.Sequence.Tests",
 		},
 		{
 			"name": "samples",
@@ -40,7 +44,8 @@
 			"Sequence.Tests": true,
 			"AspNetCore.Sequence": true,
 			"AspNetCore.Sequence.Tests": true,
-			"HttpClient.Sequence": true,
+			"Http.Sequence": true,
+			"Http.Sequence.Tests": true,
 			"samples": true,
 		},
 		"explorer.fileNesting.enabled": true,

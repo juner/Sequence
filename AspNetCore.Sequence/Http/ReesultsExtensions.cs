@@ -5,7 +5,7 @@ namespace Juner.AspNetCore.Sequence.Http;
 
 public static class ResultsExtensions
 {
-    extension(Microsoft.AspNetCore.Http.Results)
+    extension(Results)
     {
         public static IResult JsonSequence<T>(IAsyncEnumerable<T> values) => SequenceResults.JsonSequence(values);
         public static IResult JsonSequence<T>(IEnumerable<T> values) => SequenceResults.JsonSequence(values);
