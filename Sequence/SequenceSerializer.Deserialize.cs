@@ -12,7 +12,7 @@ namespace Juner.Sequence;
 public static partial class SequenceSerializer
 {
     /// <summary>
-    /// 
+    /// deserialize sequence format
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="reader"></param>
@@ -26,7 +26,7 @@ public static partial class SequenceSerializer
         var end = options.End;
         TryReadFrame tryReadFrame = (start, end) switch
         {
-            ({ Length: 0 }, [{ Length: 1 }]) => TryReadFrameEndByteOnly,
+            ({ Count: 0 }, [{ Length: 1 }]) => TryReadFrameEndByteOnly,
             ([{ Length: 1 }], [{ Length: 1 }]) => TryReadFrameStartEndByteOnly,
             _ => TryReadFrameAny,
         };
@@ -67,6 +67,17 @@ public static partial class SequenceSerializer
             reader.AdvanceTo(buffer.Start, buffer.End);
         }
     }
+
+    /// <summary>
+    /// deserialize sequence format
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="reader"></param>
+    /// <param name="jsonTypeInfo"></param>
+    /// <param name="options"></param>
+    /// <param name="encoding"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public static IAsyncEnumerable<T> DeserializeAsyncEnumerable<T>(PipeReader reader, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerReadOptions options, Encoding? encoding, CancellationToken cancellationToken = default)
     {
         encoding ??= Encoding.UTF8;
@@ -112,14 +123,14 @@ file static class SequenceSerializer_Deserialize
 
     public delegate bool TryReadFrame(
         ref ReadOnlySequence<byte> buffer,
-        ReadOnlyMemory<byte>[] start,
-        ReadOnlyMemory<byte>[] end,
+        IReadOnlyList<ReadOnlyMemory<byte>> start,
+        IReadOnlyList<ReadOnlyMemory<byte>> end,
         out ReadOnlySequence<byte> frame);
 
     public static bool TryReadFrameEndByteOnly(
         ref ReadOnlySequence<byte> buffer,
-        ReadOnlyMemory<byte>[] _,
-        ReadOnlyMemory<byte>[] end,
+        IReadOnlyList<ReadOnlyMemory<byte>> _,
+        IReadOnlyList<ReadOnlyMemory<byte>> end,
         out ReadOnlySequence<byte> frame)
     {
         var e = end[0].Span[0];
@@ -135,8 +146,8 @@ file static class SequenceSerializer_Deserialize
 
     public static bool TryReadFrameStartEndByteOnly(
          ref ReadOnlySequence<byte> buffer,
-         ReadOnlyMemory<byte>[] start,
-         ReadOnlyMemory<byte>[] end,
+         IReadOnlyList<ReadOnlyMemory<byte>> start,
+         IReadOnlyList<ReadOnlyMemory<byte>> end,
          out ReadOnlySequence<byte> frame)
     {
         frame = default;
@@ -158,8 +169,8 @@ file static class SequenceSerializer_Deserialize
 
     public static bool TryReadFrameAny(
          ref ReadOnlySequence<byte> buffer,
-         ReadOnlyMemory<byte>[] start,
-         ReadOnlyMemory<byte>[] end,
+         IReadOnlyList<ReadOnlyMemory<byte>> start,
+         IReadOnlyList<ReadOnlyMemory<byte>> end,
          out ReadOnlySequence<byte> frame)
     {
         frame = default;
@@ -177,9 +188,9 @@ file static class SequenceSerializer_Deserialize
         return true;
     }
 
-    public static bool MatchStart(ref SequenceReader<byte> reader, ReadOnlyMemory<byte>[] start)
+    public static bool MatchStart(ref SequenceReader<byte> reader, IReadOnlyList<ReadOnlyMemory<byte>> start)
     {
-        if (start.Length == 0)
+        if (start.Count is 0)
             return true;
 
         foreach (var s in start)
@@ -193,17 +204,17 @@ file static class SequenceSerializer_Deserialize
 
     public static bool TryReadToAny(
         ref SequenceReader<byte> reader,
-        ReadOnlyMemory<byte>[] delimiters,
+        IReadOnlyList<ReadOnlyMemory<byte>> delimiters,
         out ReadOnlySequence<byte> frame)
     {
         frame = default;
 
-        if (delimiters.Length == 0)
+        if (delimiters.Count is 0)
             return false;
 
-        Span<byte> firstBytes = stackalloc byte[delimiters.Length];
+        Span<byte> firstBytes = stackalloc byte[delimiters.Count];
 
-        for (var i = 0; i < delimiters.Length; i++)
+        for (var i = 0; i < delimiters.Count; i++)
             firstBytes[i] = delimiters[i].Span[0];
 
         var start = reader.Position;
@@ -229,7 +240,7 @@ file static class SequenceSerializer_Deserialize
 
     public static bool TryReadLastFrame(
         ref ReadOnlySequence<byte> buffer,
-        ReadOnlyMemory<byte>[] start,
+        IReadOnlyList<ReadOnlyMemory<byte>> start,
         out ReadOnlySequence<byte> frame)
     {
         var reader = new SequenceReader<byte>(buffer);

@@ -1,18 +1,18 @@
 ﻿namespace Juner.Sequence;
 
 /// <summary>
-/// 
+/// sequence serialize read options
 /// </summary>
 public interface ISequenceSerializerReadOptions
 {
     /// <summary>
-    /// 
+    /// start sequences by record
     /// </summary>
-    ReadOnlyMemory<byte>[] Start { get; }
+    IReadOnlyList<ReadOnlyMemory<byte>> Start { get; }
 
     /// <summary>
-    /// 
+    /// end sequences by recrod
     /// </summary>
-    ReadOnlyMemory<byte>[] End { get; }
+    IReadOnlyList<ReadOnlyMemory<byte>> End { get; }
 
 }

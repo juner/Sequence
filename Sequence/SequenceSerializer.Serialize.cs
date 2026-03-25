@@ -9,7 +9,7 @@ namespace Juner.Sequence;
 public static partial class SequenceSerializer
 {
     /// <summary>
-    /// 
+    /// serialize sequence format
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="writer"></param>
@@ -25,14 +25,30 @@ public static partial class SequenceSerializer
         if (enumerable is null) return;
         var start = options.Start;
         var end = options.End;
+        var startIsEmpty = start.IsEmpty;
+        var endIsEmpty = end.IsEmpty;
+        if (options is { FlushStrategy: FlushStrategy.PerRecord })
+        {
+            await foreach (var item in enumerable)
+            {
+                if (!startIsEmpty)
+                    await writer.WriteAsync(start, cancellationToken);
+                await JsonSerializer.SerializeAsync(writer, item, jsonTypeInfo, cancellationToken);
+                if (!endIsEmpty)
+                    await writer.WriteAsync(end, cancellationToken);
+                await writer.FlushAsync(cancellationToken);
+            }
+            return;
+        }
         await foreach (var item in enumerable)
         {
-            if (start is not { IsEmpty: true })
+            if (!startIsEmpty)
                 await writer.WriteAsync(start, cancellationToken);
             await JsonSerializer.SerializeAsync(writer, item, jsonTypeInfo, cancellationToken);
-            if (end is not { IsEmpty: true })
+            if (!endIsEmpty)
                 await writer.WriteAsync(end, cancellationToken);
         }
+        await writer.FlushAsync(cancellationToken);
     }   
 #else
     public static Task SerializeAsync<T>(PipeWriter writer, IAsyncEnumerable<T> enumerable, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
@@ -40,7 +56,7 @@ public static partial class SequenceSerializer
 #endif
 
     /// <summary>
-    /// 
+    /// serialize sequence format
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="stream"></param>
@@ -54,18 +70,35 @@ public static partial class SequenceSerializer
         if (enumerable is null) return;
         var start = options.Start;
         var end = options.End;
+        var startIsEmpty = start.IsEmpty;
+        var endIsEmpty = end.IsEmpty;
+
+        if (options.FlushStrategy is FlushStrategy.PerRecord)
+        {
+            await foreach (var item in enumerable)
+            {
+                if (!startIsEmpty)
+                    await stream.WriteAsync(start, cancellationToken);
+                await JsonSerializer.SerializeAsync(stream, item, jsonTypeInfo, cancellationToken);
+                if (!endIsEmpty)
+                    await stream.WriteAsync(end, cancellationToken);
+                await stream.FlushAsync(cancellationToken);
+            }
+            return;
+        }
         await foreach (var item in enumerable)
         {
-            if (start is not { IsEmpty: true })
+            if (!startIsEmpty)
                 await stream.WriteAsync(start, cancellationToken);
             await JsonSerializer.SerializeAsync(stream, item, jsonTypeInfo, cancellationToken);
-            if (end is not { IsEmpty: true })
+            if (!endIsEmpty)
                 await stream.WriteAsync(end, cancellationToken);
         }
+        await stream.FlushAsync(cancellationToken);
     }
 
     /// <summary>
-    /// 
+    /// serialize sequence format
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="writer"></param>
@@ -90,10 +123,12 @@ public static partial class SequenceSerializer
             try
             {
                 await SerializeAsync(writer, enumerable, jsonTypeInfo, options, cancellationToken);
+                await writer.CompleteAsync();
                 return;
             }
             catch (Exception ex)
             {
+                await writer.CompleteAsync(ex);
                 exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
             }
             finally

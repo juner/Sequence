@@ -4,6 +4,9 @@ public static class SequenceSerializerReadOptionsExtensions
 {
     extension(ISequenceSerializerReadOptions options)
     {
-        public bool IsEmpty => options is not ({ Start.Length: > 0 } or { End.Length: > 0 });
+        /// <summary>
+        /// sequence read options is Empty
+        /// </summary>
+        public bool IsEmpty => options is not ({ Start.Count: > 0 } or { End.Count: > 0 });
     }
 }
