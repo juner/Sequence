@@ -3,10 +3,39 @@
 class TrackingStream : MemoryStream
 {
     public int FlushCount { get; private set; }
-
-    public override Task FlushAsync(CancellationToken cancellationToken)
+    bool isflushing = false;
+    public override void Flush()
     {
+        if (isflushing)
+        {
+            base.Flush();
+            return;
+        }
         FlushCount++;
-        return base.FlushAsync(cancellationToken);
+        isflushing = true;
+        try {        
+            base.Flush();
+        }finally
+        {
+            isflushing = false;
+        }
+    }
+
+    public override async Task FlushAsync(CancellationToken cancellationToken)
+    {
+        if (isflushing)
+        {
+            await base.FlushAsync(cancellationToken);
+            return;
+        }
+        isflushing = true;
+        FlushCount++;
+        try {
+            await base.FlushAsync(cancellationToken);
+        }
+        finally
+        {
+            isflushing = false;
+        }
     }
 }

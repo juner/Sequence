@@ -155,4 +155,291 @@ public class SequenceSerializer_DeserializeTests
 
         Assert.IsEmpty(results);
     }
+
+    [TestMethod]
+    public async Task Should_Use_TryReadFrameAny_With_MultiDelimiter()
+    {
+        IReadOnlyList<ReadOnlyMemory<byte>> start = [
+            Encoding.UTF8.GetBytes("<<").AsMemory(),
+            Encoding.UTF8.GetBytes("[[").AsMemory()
+        ];
+
+        IReadOnlyList<ReadOnlyMemory<byte>> end = [
+            Encoding.UTF8.GetBytes(">>").AsMemory(),
+            Encoding.UTF8.GetBytes("]]").AsMemory()
+        ];
+
+        var options = new SequenceSerializerOptions(start, end, default, default);
+
+        var reader = PipeHelper.CreateReader(
+            "<<{\"Id\":1,\"Name\":\"A\"}>>",
+            "[[{\"Id\":2,\"Name\":\"B\"}]]"
+        );
+
+        var results = new List<TestData>();
+
+        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader,
+            GetTypeInfo(),
+            options,
+            CancellationToken))
+        {
+            results.Add(item);
+        }
+
+        Assert.HasCount(2, results);
+    }
+
+    [TestMethod]
+    public async Task Should_Handle_Delimiter_Split_Across_Chunks()
+    {
+        var reader = PipeHelper.CreateReader(
+            "{\"Id\":1,\"Name\":\"A\"}",
+            "\n{\"Id\":2,\"Name\":\"B\"}\n"
+        );
+
+        var results = new List<TestData>();
+
+        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader,
+            GetTypeInfo(),
+            SequenceSerializerOptions.JsonLines,
+            CancellationToken))
+        {
+            results.Add(item);
+        }
+
+        Assert.HasCount(2, results);
+    }
+
+    [TestMethod]
+    public async Task Should_Read_Last_Frame_Without_EndDelimiter()
+    {
+        var reader = PipeHelper.CreateReader(
+            "{\"Id\":1,\"Name\":\"A\"}\n",
+            "{\"Id\":2,\"Name\":\"B\"}" // ← LFなし
+        );
+
+        var results = new List<TestData>();
+
+        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader,
+            GetTypeInfo(),
+            SequenceSerializerOptions.JsonLines,
+            CancellationToken))
+        {
+            results.Add(item);
+        }
+
+        Assert.HasCount(2, results);
+    }
+
+    [TestMethod]
+    public async Task Should_Work_With_No_Start_Delimiter()
+    {
+        var reader = PipeHelper.CreateReader(
+            "{\"Id\":1,\"Name\":\"A\"}\n"
+        );
+
+        var results = new List<TestData>();
+
+        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader,
+            GetTypeInfo(),
+            SequenceSerializerOptions.JsonLines,
+            CancellationToken))
+        {
+            results.Add(item);
+        }
+
+        Assert.HasCount(1, results);
+    }
+
+    [TestMethod]
+    public async Task Should_Skip_When_Start_Not_Matched()
+    {
+        IReadOnlyList<ReadOnlyMemory<byte>> start = [Encoding.UTF8.GetBytes("##").AsMemory()];
+        IReadOnlyList<ReadOnlyMemory<byte>> end = [Encoding.UTF8.GetBytes("\n").AsMemory()];
+
+        var options = new SequenceSerializerOptions(start, end, default, default);
+
+        var reader = PipeHelper.CreateReader(
+            "{\"Id\":1,\"Name\":\"A\"}\n" // ← startなし
+        );
+
+        var results = new List<TestData>();
+
+        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader,
+            GetTypeInfo(),
+            options,
+            CancellationToken))
+        {
+            results.Add(item);
+        }
+
+        Assert.IsEmpty(results);
+    }
+
+    [TestMethod]
+    public async Task Deserialize_With_Encoding()
+    {
+        var json = "{\"Id\":1,\"Name\":\"あ\"}\n";
+
+        var bytes = Encoding.Unicode.GetBytes(json);
+        await using var stream = new MemoryStream(bytes);
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var reader = PipeReader.Create(stream);
+
+        var results = new List<TestData>();
+
+        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader,
+            GetTypeInfo(),
+            SequenceSerializerOptions.JsonLines,
+            Encoding.Unicode,
+            CancellationToken))
+        {
+            results.Add(item);
+        }
+
+        Assert.HasCount(1, results);
+        Assert.AreEqual("あ", results[0].Name);
+    }
+
+    [TestMethod]
+    public async Task Should_Throw_On_Invalid_Json()
+    {
+        var reader = PipeHelper.CreateReader(
+            "{invalid json}\n"
+        );
+
+        await Assert.ThrowsAsync<JsonException>(async () =>
+        {
+            await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+                reader,
+                GetTypeInfo(),
+                SequenceSerializerOptions.JsonLines,
+                CancellationToken))
+            {
+            }
+        });
+    }
+
+    [TestMethod]
+    public async Task Should_Not_Stall_On_Incomplete_Frame()
+    {
+        var reader = PipeHelper.CreateReader(
+            "{\"Id\":1" // ← 不完全
+        );
+
+        var results = new List<TestData>();
+
+        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader,
+            GetTypeInfo(),
+            SequenceSerializerOptions.JsonLines with
+            {
+                IgnoreIncompleteFrame = true,
+            },
+            CancellationToken))
+        {
+            results.Add(item);
+        }
+
+        Assert.IsEmpty(results);
+    }
+
+    [TestMethod]
+    public async Task Should_Handle_Partial_Delimiter_Match()
+    {
+        IReadOnlyList<ReadOnlyMemory<byte>> end = [
+            Encoding.UTF8.GetBytes("ab").AsMemory(),
+            Encoding.UTF8.GetBytes("abc").AsMemory()
+        ];
+
+        var options = new SequenceSerializerOptions([], end, default, default);
+
+        var reader = PipeHelper.CreateReader(
+            "{\"Id\":1}abc"
+        );
+
+        var results = new List<TestData>();
+
+        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader,
+            GetTypeInfo(),
+            options,
+            CancellationToken))
+        {
+            results.Add(item);
+        }
+
+        Assert.HasCount(1, results);
+    }
+
+    [TestMethod]
+    public async Task Should_Handle_Large_Stream()
+    {
+        var pipe = new Pipe();
+
+        static async IAsyncEnumerable<TestData> Source()
+        {
+            for (var i = 0; i < 10000; i++)
+                yield return new TestData(i, "A");
+        }
+
+        var typeInfo = GetTypeInfo();
+        async Task SerializeAsync(CancellationToken CancellationToken) {
+            await SequenceSerializer.SerializeAsync(
+                pipe.Writer,
+                Source(),
+                typeInfo,
+                SequenceSerializerOptions.JsonLines,
+                CancellationToken);
+
+            await pipe.Writer.CompleteAsync();
+        }
+
+        var count = 0;
+        async Task DeserializeAsync(CancellationToken CancellationToken) {
+            await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+                pipe.Reader,
+                typeInfo,
+                SequenceSerializerOptions.JsonLines,
+                CancellationToken))
+            {
+                count++;
+            }
+        }
+        await Task.WhenAll([
+            SerializeAsync(CancellationToken),
+            DeserializeAsync(CancellationToken),
+        ]);
+
+        Assert.AreEqual(10000, count);
+    }
+
+    [TestMethod]
+    public async Task Should_Propagate_Exception_From_Stream()
+    {
+        // Readで例外出すやつ
+        await using var stream = new ThrowingStream
+        {
+            ThrowIsRead = true,
+        }; 
+        var reader = PipeReader.Create(stream);
+        await Assert.ThrowsAsync<Exception>(async () =>
+        {
+            await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+                reader,
+                GetTypeInfo(),
+                SequenceSerializerOptions.JsonLines,
+                Encoding.Unicode,
+                CancellationToken))
+            {
+            }
+        });
+    }
 }

@@ -12,7 +12,8 @@ public static class HttpContentExtensions
         ISequenceSerializerReadOptions options,
         CancellationToken cancellationToken = default)
     {
-        if (options?.IsEmpty ?? true) throw new ArgumentException(null, nameof(options));
+        ArgumentNullException.ThrowIfNull(options);
+        if (options.IsEmpty) throw new ArgumentException(null, nameof(options));
         var stream = content.ReadAsStream(cancellationToken);
         var reader = PipeReader.Create(stream);
 

@@ -38,8 +38,15 @@ public static partial class SequenceSerializer
             while (tryReadFrame(ref buffer, start, end, out var frame))
             {
                 Utf8JsonReader jsonReader = frame is { IsSingleSegment: true } ? new(frame.FirstSpan) : new(frame);
-
-                var value = JsonSerializer.Deserialize(ref jsonReader, jsonTypeInfo);
+                T? value;
+                try
+                {
+                    value = JsonSerializer.Deserialize(ref jsonReader, jsonTypeInfo);
+                }
+                catch (JsonException) when (options.IgnoreIncompleteFrame)
+                {
+                    yield break;
+                }
 
                 if (value is not null)
                     yield return value;
@@ -52,9 +59,15 @@ public static partial class SequenceSerializer
                     if (TryReadLastFrame(ref buffer, start, out var frame))
                     {
                         var jsonReader = new Utf8JsonReader(frame);
-
-                        var value = JsonSerializer.Deserialize(ref jsonReader, jsonTypeInfo);
-
+                        T? value;
+                        try
+                        {
+                            value = JsonSerializer.Deserialize(ref jsonReader, jsonTypeInfo);
+                        }
+                        catch (JsonException) when (options.IgnoreIncompleteFrame)
+                        {
+                            yield break;
+                        }
                         if (value is not null)
                             yield return value;
                     }
@@ -90,10 +103,11 @@ public static partial class SequenceSerializer
         {
             var reader = PipeReader.Create(stream);
             ExceptionDispatchInfo? exceptionDispatchInfo = null;
-            var enumerable = DeserializeAsyncEnumerable(reader, jsonTypeInfo, options, cancellationToken).WithCancellation(cancellationToken).GetAsyncEnumerator();
-            var next = true;
+
             try
             {
+                await using var enumerable = DeserializeAsyncEnumerable(reader, jsonTypeInfo, options, cancellationToken).WithCancellation(cancellationToken).GetAsyncEnumerator();
+                var next = true;
                 while (next)
                 {
                     try
@@ -203,9 +217,9 @@ file static class SequenceSerializer_Deserialize
     }
 
     public static bool TryReadToAny(
-        ref SequenceReader<byte> reader,
-        IReadOnlyList<ReadOnlyMemory<byte>> delimiters,
-        out ReadOnlySequence<byte> frame)
+    ref SequenceReader<byte> reader,
+    IReadOnlyList<ReadOnlyMemory<byte>> delimiters,
+    out ReadOnlySequence<byte> frame)
     {
         frame = default;
 
@@ -223,18 +237,29 @@ file static class SequenceSerializer_Deserialize
         {
             var pos = reader.Position;
 
+            ReadOnlyMemory<byte>? bestMatch = null;
+
+            // 👇 advanceしないで「最長一致」を探す
             foreach (var d in delimiters)
             {
-                if (reader.IsNext(d.Span, advancePast: true))
+                if (reader.IsNext(d.Span, advancePast: false))
                 {
-                    frame = reader.Sequence.Slice(start, pos);
-                    return true;
+                    if (bestMatch is null || d.Length > bestMatch.Value.Length)
+                    {
+                        bestMatch = d;
+                    }
                 }
             }
 
+            if (bestMatch is not null)
+            {
+                reader.Advance(bestMatch.Value.Length);
+
+                frame = reader.Sequence.Slice(start, pos);
+                return true;
+            }
             reader.Advance(1);
         }
-
         return false;
     }
 

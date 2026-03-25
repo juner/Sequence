@@ -15,4 +15,8 @@ public interface ISequenceSerializerReadOptions
     /// </summary>
     IReadOnlyList<ReadOnlyMemory<byte>> End { get; }
 
+    /// <summary>
+    /// ignore incomplete frame
+    /// </summary>
+    bool IgnoreIncompleteFrame { get; }
 }

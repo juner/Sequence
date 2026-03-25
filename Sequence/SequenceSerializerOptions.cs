@@ -8,12 +8,14 @@
 /// <param name="WriteStart"></param>
 /// <param name="WriteEnd"></param>
 /// <param name="FlushStrategy"></param>
+/// <param name="IgnoreIncompleteFrame"></param>
 public sealed record SequenceSerializerOptions(
     IReadOnlyList<ReadOnlyMemory<byte>> ReadStart,
     IReadOnlyList<ReadOnlyMemory<byte>> ReadEnd,
     ReadOnlyMemory<byte> WriteStart,
     ReadOnlyMemory<byte> WriteEnd,
-    FlushStrategy FlushStrategy = FlushStrategy.PerRecord
+    FlushStrategy FlushStrategy = FlushStrategy.PerRecord,
+    bool IgnoreIncompleteFrame = false
 ) : ISequenceSerializerOptions
 {
     static readonly byte[] RS = [.. "\u001e"u8];
@@ -44,7 +46,7 @@ public sealed record SequenceSerializerOptions(
     /// <summary>
     /// <see href="https://datatracker.ietf.org/doc/html/rfc7464">RFC 7464</see> application/json-seq format
     /// </summary>
-    public static ISequenceSerializerOptions JsonSequence
+    public static SequenceSerializerOptions JsonSequence
     {
         get
         {
@@ -63,7 +65,7 @@ public sealed record SequenceSerializerOptions(
     /// <summary>
     /// <see href="https://jsonlines.org/">JSON Lines</see> (<see href="https://web.archive.org/web/20231218162511/https://ndjson.org/">ndjson</see>), newline-delimited JSON format.
     /// </summary>
-    public static ISequenceSerializerOptions JsonLines
+    public static SequenceSerializerOptions JsonLines
     {
         get
         {

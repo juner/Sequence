@@ -98,7 +98,7 @@ public class SequenceSerializer_SerializeTests
             yield return 2;
         }
 
-        var options = ((SequenceSerializerOptions)SequenceSerializerOptions.JsonLines) with
+        var options = SequenceSerializerOptions.JsonLines with
         {
             FlushStrategy = FlushStrategy.PerRecord
         };
@@ -119,7 +119,7 @@ public class SequenceSerializer_SerializeTests
             yield return 2;
         }
 
-        var options = ((SequenceSerializerOptions)SequenceSerializerOptions.JsonLines) with
+        var options = SequenceSerializerOptions.JsonLines with
         {
             FlushStrategy = FlushStrategy.None
         };
