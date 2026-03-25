@@ -391,7 +391,8 @@ public class SequenceSerializer_DeserializeTests
         }
 
         var typeInfo = GetTypeInfo();
-        async Task SerializeAsync(CancellationToken CancellationToken) {
+        async Task SerializeAsync(CancellationToken CancellationToken)
+        {
             await SequenceSerializer.SerializeAsync(
                 pipe.Writer,
                 Source(),
@@ -403,7 +404,8 @@ public class SequenceSerializer_DeserializeTests
         }
 
         var count = 0;
-        async Task DeserializeAsync(CancellationToken CancellationToken) {
+        async Task DeserializeAsync(CancellationToken CancellationToken)
+        {
             await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
                 pipe.Reader,
                 typeInfo,
@@ -428,7 +430,7 @@ public class SequenceSerializer_DeserializeTests
         await using var stream = new ThrowingStream
         {
             ThrowIsRead = true,
-        }; 
+        };
         var reader = PipeReader.Create(stream);
         await Assert.ThrowsAsync<Exception>(async () =>
         {

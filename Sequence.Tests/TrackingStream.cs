@@ -13,9 +13,11 @@ class TrackingStream : MemoryStream
         }
         FlushCount++;
         isflushing = true;
-        try {        
+        try
+        {
             base.Flush();
-        }finally
+        }
+        finally
         {
             isflushing = false;
         }
@@ -30,7 +32,8 @@ class TrackingStream : MemoryStream
         }
         isflushing = true;
         FlushCount++;
-        try {
+        try
+        {
             await base.FlushAsync(cancellationToken);
         }
         finally
