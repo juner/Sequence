@@ -219,9 +219,9 @@ file static class SequenceSerializer_Deserialize
     }
 
     public static bool TryReadToAny(
-    ref SequenceReader<byte> reader,
-    IReadOnlyList<ReadOnlyMemory<byte>> delimiters,
-    out ReadOnlySequence<byte> frame)
+        ref SequenceReader<byte> reader,
+        IReadOnlyList<ReadOnlyMemory<byte>> delimiters,
+        out ReadOnlySequence<byte> frame)
     {
         frame = default;
 

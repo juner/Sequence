@@ -27,7 +27,7 @@ public static partial class SequenceSerializer
         var end = options.End;
         var startIsEmpty = start.IsEmpty;
         var endIsEmpty = end.IsEmpty;
-        if (options is { FlushStrategy: FlushStrategy.PerRecord })
+        if (options.FlushStrategy is FlushStrategy.PerRecord)
         {
             await foreach (var item in enumerable)
             {

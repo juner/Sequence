@@ -24,11 +24,12 @@ builder.Services.AddOpenApi(options
     .AddSequenceOpenApi();
 
 builder.Services.AddLogging(
-    static builder => {
+    static builder =>
+    {
         builder.AddSimpleConsole(options =>
             options.IncludeScopes = true
         );
-        builder.AddFilter(level => true);    
+        builder.AddFilter(level => true);
     }
 );
 
@@ -236,12 +237,13 @@ function error(value) {
     new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(string), contentTypes: ["text/html"])
 );
 
-main.MapGet("/countup/{count:int}", ([FromRoute]int count, CancellationToken cancellationToken) =>  {
+main.MapGet("/countup/{count:int}", ([FromRoute] int count, CancellationToken cancellationToken) =>
+{
     Log.LogStart(logger);
     return TypedResults.JsonSequence(Enumerable(count, cancellationToken));
-    static async IAsyncEnumerable<string> Enumerable(int count, [EnumeratorCancellation]CancellationToken cancellationToken)
+    static async IAsyncEnumerable<string> Enumerable(int count, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        for(var i = 0; i<= count; i++)
+        for (var i = 0; i <= count; i++)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
             yield return $"{i}";
@@ -254,7 +256,7 @@ main.MapGet("/countup/{count:int}", ([FromRoute]int count, CancellationToken can
 main.MapPost("/addition", async (Sequence<int> nums, CancellationToken cancellationToken) =>
 {
     var addition = 0;
-    await foreach(var num in nums.WithCancellation(cancellationToken))
+    await foreach (var num in nums.WithCancellation(cancellationToken))
     {
         addition += num;
     }
@@ -280,7 +282,7 @@ static partial class Log
         Message = "message: {message}"
     )]
     public static partial void LogMessage(ILogger logger, string message);
-    
+
 }
 
 [JsonSerializable(typeof(Stream))]
@@ -288,4 +290,4 @@ static partial class Log
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(IAsyncEnumerable<int>))]
 [JsonSerializable(typeof(IAsyncEnumerable<string>))]
-partial class JsonSchemaContext : JsonSerializerContext {}
+partial class JsonSchemaContext : JsonSerializerContext { }
