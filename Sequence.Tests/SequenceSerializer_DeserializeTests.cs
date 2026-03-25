@@ -1,4 +1,5 @@
-﻿using System.IO.Pipelines;
+﻿using Juner.Sequence.Extensions;
+using System.IO.Pipelines;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -294,7 +295,7 @@ public class SequenceSerializer_DeserializeTests
 
         var results = new List<TestData>();
 
-        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+        await foreach (var item in EncodeExntensions.DeserializeAsyncEnumerable(
             reader,
             GetTypeInfo(),
             SequenceSerializerOptions.JsonLines,

@@ -1,4 +1,5 @@
 ﻿using Juner.Sequence;
+using Juner.Sequence.Extensions;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
@@ -81,6 +82,7 @@ internal static class InternalFormatWriter
         Encoding SelectedEncoding,
         ISequenceSerializerWriteOptions options,
         CancellationToken cancellationToken)
+        where T : notnull
     {
         if (!TryGetOutputMode(typeof(Enumerable), out var OutputType, out var type))
             throw new InvalidOperationException($"not support output type ");
@@ -97,7 +99,7 @@ internal static class InternalFormatWriter
         if (SelectedEncoding == null || SelectedEncoding == Encoding.UTF8)
             return SequenceSerializer.SerializeAsync(httpContext.Response.BodyWriter, newValues, jsonTypeInfo2, options, cancellationToken);
         else
-            return SequenceSerializer.SerializeAsync(httpContext.Response.BodyWriter, newValues, jsonTypeInfo2, options, SelectedEncoding, cancellationToken);
+            return EncodeExntensions.SerializeAsync(httpContext.Response.BodyWriter, newValues, jsonTypeInfo2, options, SelectedEncoding, cancellationToken);
     }
     static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(ChannelReader<T>? values, [EnumeratorCancellation] CancellationToken cancellationToken)
     {

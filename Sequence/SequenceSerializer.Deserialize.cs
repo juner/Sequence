@@ -1,8 +1,6 @@
 ﻿using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using static Juner.Sequence.SequenceSerializer_Deserialize;
@@ -80,56 +78,6 @@ public static partial class SequenceSerializer
             }
 
             reader.AdvanceTo(buffer.Start, buffer.End);
-        }
-    }
-
-    /// <summary>
-    /// deserialize sequence format
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="reader"></param>
-    /// <param name="jsonTypeInfo"></param>
-    /// <param name="options"></param>
-    /// <param name="encoding"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public static IAsyncEnumerable<T> DeserializeAsyncEnumerable<T>(PipeReader reader, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerReadOptions options, Encoding? encoding, CancellationToken cancellationToken = default)
-    {
-        encoding ??= Encoding.UTF8;
-        if (Encoding.UTF8 == encoding)
-        {
-            return DeserializeAsyncEnumerable(reader, jsonTypeInfo, options, cancellationToken);
-        }
-        return WrappedDeserializeAsyncEnumerable(Encoding.CreateTranscodingStream(reader.AsStream(), encoding, Encoding.UTF8, leaveOpen: true), jsonTypeInfo, options, cancellationToken);
-        static async IAsyncEnumerable<T> WrappedDeserializeAsyncEnumerable(Stream stream, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerReadOptions options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var reader = PipeReader.Create(stream);
-            ExceptionDispatchInfo? exceptionDispatchInfo = null;
-
-            try
-            {
-                await using var enumerable = DeserializeAsyncEnumerable(reader, jsonTypeInfo, options, cancellationToken).WithCancellation(cancellationToken).GetAsyncEnumerator();
-                var next = true;
-                while (next)
-                {
-                    try
-                    {
-                        next = await enumerable.MoveNextAsync();
-                        if (!next) break;
-                    }
-                    catch (Exception ex)
-                    {
-                        exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
-                        break;
-                    }
-                    yield return enumerable.Current;
-                }
-            }
-            finally
-            {
-                exceptionDispatchInfo?.Throw();
-            }
-
         }
     }
 }

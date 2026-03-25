@@ -1,4 +1,5 @@
-﻿using System.IO.Pipelines;
+﻿using Juner.Sequence.Extensions;
+using System.IO.Pipelines;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -168,7 +169,7 @@ public class SequenceSerializer_SerializeTests
 
         var typeInfo = (JsonTypeInfo<string>)JsonSerializerOptions.Default.GetTypeInfo(typeof(string));
 
-        await SequenceSerializer.SerializeAsync(
+        await EncodeExntensions.SerializeAsync(
             writer,
             Data(),
             typeInfo,
