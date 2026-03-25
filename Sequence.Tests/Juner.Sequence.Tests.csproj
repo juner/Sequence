@@ -18,11 +18,11 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Sequence\Juner.Sequence.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"></AssemblyAttribute>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Sequence\Juner.Sequence.csproj" />
   </ItemGroup>
 
   <Target Name="TestResultCleaning" AfterTargets="Clean">

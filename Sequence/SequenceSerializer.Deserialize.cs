@@ -37,6 +37,7 @@ public static partial class SequenceSerializer
 
             while (tryReadFrame(ref buffer, start, end, out var frame))
             {
+                if (frame.IsEmpty) continue;
                 Utf8JsonReader jsonReader = frame is { IsSingleSegment: true } ? new(frame.FirstSpan) : new(frame);
                 T? value;
                 try
@@ -58,6 +59,7 @@ public static partial class SequenceSerializer
                 {
                     if (TryReadLastFrame(ref buffer, start, out var frame))
                     {
+                        if (frame.IsEmpty) yield break;
                         var jsonReader = new Utf8JsonReader(frame);
                         T? value;
                         try

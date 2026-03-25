@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>Juner.Sequence</RootNamespace>
+    <RootNamespace>Juner.Http.Sequence</RootNamespace>
     <TestResultsFolderPath>$(MSBuildProjectDirectory)\TestResults</TestResultsFolderPath>
   </PropertyGroup>
 
@@ -19,6 +19,10 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"></AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Http.Sequence\Juner.Http.Sequence.csproj" />
   </ItemGroup>
 
   <Target Name="TestResultCleaning" AfterTargets="Clean">

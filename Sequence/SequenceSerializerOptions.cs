@@ -20,6 +20,7 @@ public sealed record SequenceSerializerOptions(
 {
     static readonly byte[] RS = [.. "\u001e"u8];
     static readonly byte[] LF = [.. "\n"u8];
+    static readonly byte[] CRLF = [.. "\r\n"u8];
 
 #pragma warning disable IDE0305 // コレクションの初期化を簡略化します
     public IReadOnlyList<ReadOnlyMemory<byte>> ReadStart { get; } = ReadStart.ToArray();
@@ -52,7 +53,7 @@ public sealed record SequenceSerializerOptions(
         {
             if (_jsonSequence is null)
             {
-                Interlocked.CompareExchange(ref _jsonSequence, new SequenceSerializerOptions([RS], [LF], RS, LF), null);
+                Interlocked.CompareExchange(ref _jsonSequence, new SequenceSerializerOptions([], [RS], RS, LF), null);
             }
             return _jsonSequence;
         }

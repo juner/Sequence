@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Juner.Sequence.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Pipelines" />

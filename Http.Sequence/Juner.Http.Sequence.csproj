@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Juner.Http.Sequence.Tests" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\Sequence\Juner.Sequence.csproj" />
   </ItemGroup>
