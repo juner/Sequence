@@ -2,6 +2,13 @@ namespace Juner.Sequence;
 
 class ThrowingStream : MemoryStream
 {
+    public ThrowingStream() : base() { }
+    public ThrowingStream(byte[] buffer) : base(buffer) { }
+    public ThrowingStream(int capacity) : base(capacity) { }
+    public ThrowingStream(byte[] buffer, bool writable) : base(buffer, writable) { }
+    public ThrowingStream(byte[] buffer, int index, int count) : base(buffer, index, count) { }
+    public ThrowingStream(byte[] buffer, int index, int count, bool writable) : base(buffer, index, count, writable) { }
+    public ThrowingStream(byte[] buffer, int index, int count, bool writable, bool publiclyVisible) : base(buffer, index, count, writable, publiclyVisible) { }
 
     public bool ThrowIsWrite { get; init; } = false;
 

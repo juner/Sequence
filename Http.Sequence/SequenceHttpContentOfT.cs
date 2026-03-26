@@ -5,7 +5,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Juner.Http.Sequence;
 
-public sealed class SequenceHttpContent<T> : HttpContent
+public sealed class SequenceHttpContent<T> : HttpContent 
 {
     readonly IAsyncEnumerable<T> _source;
     readonly JsonTypeInfo<T> _typeInfo;

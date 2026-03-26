@@ -1,7 +1,9 @@
 ﻿using System.IO.Pipelines;
-using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
+#if NET9_0_OR_GREATER
+using System.Text.Json;
+#endif
 namespace Juner.Sequence;
 
 public static partial class SequenceSerializer
@@ -49,49 +51,10 @@ public static partial class SequenceSerializer
         await writer.FlushAsync(cancellationToken);
     }   
 #else
-    public static Task SerializeAsync<T>(PipeWriter writer, IAsyncEnumerable<T> enumerable, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
-        => SerializeAsync(writer.AsStream(), enumerable, jsonTypeInfo, options, cancellationToken);
-#endif
-
-    /// <summary>
-    /// serialize sequence format
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="enumerable"></param>
-    /// <param name="jsonTypeInfo"></param>
-    /// <param name="options"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public static async Task SerializeAsync<T>(Stream stream, IAsyncEnumerable<T> enumerable, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
+    public static async Task SerializeAsync<T>(PipeWriter writer, IAsyncEnumerable<T> enumerable, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
     {
-        if (enumerable is null) return;
-        var start = options.Start;
-        var end = options.End;
-        var startIsEmpty = start.IsEmpty;
-        var endIsEmpty = end.IsEmpty;
-
-        if (options.FlushStrategy is FlushStrategy.PerRecord)
-        {
-            await foreach (var item in enumerable)
-            {
-                if (!startIsEmpty)
-                    await stream.WriteAsync(start, cancellationToken);
-                await JsonSerializer.SerializeAsync(stream, item, jsonTypeInfo, cancellationToken);
-                if (!endIsEmpty)
-                    await stream.WriteAsync(end, cancellationToken);
-                await stream.FlushAsync(cancellationToken);
-            }
-            return;
-        }
-        await foreach (var item in enumerable)
-        {
-            if (!startIsEmpty)
-                await stream.WriteAsync(start, cancellationToken);
-            await JsonSerializer.SerializeAsync(stream, item, jsonTypeInfo, cancellationToken);
-            if (!endIsEmpty)
-                await stream.WriteAsync(end, cancellationToken);
-        }
-        await stream.FlushAsync(cancellationToken);
+        await using var stream = writer.AsStream(leaveOpen: true);
+        await Extensions.StreamExtensions.SerializeAsync(writer.AsStream(), enumerable, jsonTypeInfo, options, cancellationToken);
     }
+#endif
 }
