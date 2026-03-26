@@ -1,46 +1,48 @@
 # Juner.Http.Sequence
 
-HTTP streaming extensions for `Juner.Sequence`.
+Streaming JSON sequence support for `HttpClient` and `HttpContent`.
 
-This library provides a minimal bridge between `HttpClient` and `Juner.Sequence`, enabling:
-
-- Streaming **read** from `HttpContent`
-- Streaming **write** via `HttpRequestMessage`
-- Support for JSON Lines and JSON Sequence formats
+This library provides seamless integration between `Juner.Sequence` and HTTP APIs, enabling efficient streaming of JSON data using `IAsyncEnumerable<T>`.
 
 ---
 
-## ✨ Features
+## 📦 Package
 
-- 📥 Read `IAsyncEnumerable<T>` directly from `HttpContent`
-- 📤 Send `IAsyncEnumerable<T>` as HTTP request content
-- 🚀 Zero-buffer streaming
-- 🔒 AOT-friendly (via `JsonTypeInfo<T>`)
-- 🧩 Minimal and dependency-light
+- `Juner.Http.Sequence`
 
 ---
 
-## 📦 Installation
+## 🚀 Features
 
-```bash
-dotnet add package Juner.Http.Sequence
+- 🌐 `HttpClient` integration for streaming JSON
+- 🔄 `IAsyncEnumerable<T>` support for request and response
+- 🧩 Supports:
+  - NDJSON (`application/x-ndjson`)
+  - JSON Lines (`application/jsonl`)
+  - JSON Sequence (`application/json-seq`)
+- 🛡️ AOT-friendly via `JsonTypeInfo<T>`
+- ⚡ Minimal overhead, fully streaming
+
+---
+
+## ✨ Quick Example
+
+### Send streaming request (NDJSON)
+
+```csharp
+var request = new HttpRequestMessage(HttpMethod.Post, url)
+    .WithNdJsonContent(source, MyJsonContext.Default.MyType);
+
+var response = await httpClient.SendAsync(request);
 ```
 
 ---
 
-## 🚀 Quick Start
-
----
-
-### 📥 Read streaming response
+### Receive streaming response
 
 ```csharp
-using var response = await httpClient.GetAsync(
-    "/data",
-    HttpCompletionOption.ResponseHeadersRead);
-
-await foreach (var item in response.Content.ReadJsonLinesAsyncEnumerable(
-    AppJsonContext.Default.TestData))
+await foreach (var item in response.Content.ReadJsonLinesAsyncEnumerable<MyType>(
+    MyJsonContext.Default.MyType))
 {
     Console.WriteLine(item);
 }
@@ -48,124 +50,123 @@ await foreach (var item in response.Content.ReadJsonLinesAsyncEnumerable(
 
 ---
 
-### 📤 Send streaming request
+## 🧠 API Design
+
+### ✅ AOT-safe (recommended)
 
 ```csharp
-var request = new HttpRequestMessage(HttpMethod.Post, "/data")
-    .WithJsonLinesContent(
-        GetAsyncEnumerable(),
-        AppJsonContext.Default.TestData);
-
-await httpClient.SendAsync(request);
+JsonTypeInfo<T>
 ```
+
+- No reflection
+- Fully compatible with Native AOT
+- Best performance
 
 ---
 
-## 📥 Reading APIs
-
-### Generic
+### ⚠️ Convenience APIs
 
 ```csharp
-content.ReadSequenceEnumerable<T>(typeInfo, options)
+JsonSerializerOptions.Default
 ```
 
-### JSON Sequence (RFC 7464)
+- Easier to use
+- Uses default metadata resolution (`TypeInfoResolver`)
+- May rely on reflection
+- Not guaranteed to be AOT-safe
 
-```csharp
-content.ReadJsonSequenceAsyncEnumerable<T>(typeInfo)
-```
-
-### JSON Lines
-
-```csharp
-content.ReadJsonLinesAsyncEnumerable<T>(typeInfo)
-```
+👉 Prefer `JsonTypeInfo<T>` for AOT scenarios
 
 ---
 
-## 📤 Writing APIs
-
-### Generic
+## 🔧 Writing (Request)
 
 ```csharp
 request.WithSequenceContent(
     source,
-    typeInfo,
-    options,
-    contentType)
+    MyJsonContext.Default.MyType,
+    SequenceSerializerOptions.JsonLines,
+    "application/jsonl");
 ```
 
-### JSON Sequence
+### Shortcuts
 
 ```csharp
-request.WithJsonSequenceContent(source, typeInfo)
-```
-
-### JSON Lines
-
-```csharp
-request.WithJsonLinesContent(source, typeInfo)
-```
-
-### NDJSON
-
-```csharp
-request.WithNdJsonContent(source, typeInfo)
+request.WithJsonSequenceContent(source, typeInfo);
+request.WithJsonLinesContent(source, typeInfo);
+request.WithNdJsonContent(source, typeInfo);
 ```
 
 ---
 
-## 📡 Content Types
+## 🔧 Reading (Response)
+
+```csharp
+await foreach (var item in response.Content.ReadSequenceEnumerable<T>(
+    typeInfo,
+    SequenceSerializerOptions.JsonLines))
+{
+    // ...
+}
+```
+
+### Shortcuts
+
+```csharp
+response.Content.ReadJsonSequenceAsyncEnumerable<T>(typeInfo);
+response.Content.ReadJsonLinesAsyncEnumerable<T>(typeInfo);
+```
+
+---
+
+## 🧩 Supported Formats
 
 | Format | Content-Type |
-|--------|-------------|
-| JSON Sequence | `application/json-seq` |
-| JSON Lines | `application/jsonl` |
+|-------|-------------|
 | NDJSON | `application/x-ndjson` |
+| JSON Lines | `application/jsonl` |
+| JSON Sequence | `application/json-seq` |
 
 ---
 
-## 🧱 How It Works
+## 🔗 Relationship
 
 ```
-HttpContent (Stream)
-    ↓
-PipeReader
-    ↓
 Juner.Sequence
     ↓
-IAsyncEnumerable<T>
+Juner.Http.Sequence
 ```
 
-```
-IAsyncEnumerable<T>
-    ↓
-Juner.Sequence
-    ↓
-PipeWriter
-    ↓
-HttpContent
-```
+- Depends on `Juner.Sequence`
+- Adds HTTP integration layer
+- No ASP.NET Core dependency
 
 ---
 
-## 🔗 Relationship with Juner.Sequence
+## 📌 When to use
 
-This library depends on `Juner.Sequence` for serialization.
+Use this package when:
 
-If you need lower-level control over pipelines or formats,
-use `Juner.Sequence` directly.
-
----
-
-## ⚠️ Notes
-
-- `JsonTypeInfo<T>` is required (AOT-friendly)
-- Streaming requires `HttpCompletionOption.ResponseHeadersRead`
-- `Content-Length` is not computed (chunked transfer)
+- You need to stream large JSON datasets over HTTP
+- You want `HttpClient` to work with `IAsyncEnumerable<T>`
+- You are working with NDJSON / JSON Lines APIs
+- You want AOT-friendly serialization over HTTP
 
 ---
 
 ## 📄 License
 
-MIT License
+MIT
+
+---
+
+## 🔗 Links
+
+- GitHub: https://github.com/juner/Sequence
+- NuGet: https://www.nuget.org/packages/Juner.Http.Sequence
+
+---
+
+## 🙌 Contributions
+
+Issues and PRs are welcome!
