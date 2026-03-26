@@ -21,9 +21,11 @@
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"></AssemblyAttribute>
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute">
+      <Justification>テストプロジェクトにつき</Justification>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <Target Name="TestResultCleaning" AfterTargets="Clean">
