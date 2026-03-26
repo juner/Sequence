@@ -6,10 +6,15 @@ using System.Text.Json.Serialization.Metadata;
 namespace Juner.Sequence.Extensions.Json;
 
 /// <summary>
-/// use <see cref="JsonSerializerOptions"/> extensions
+/// <see cref="SequenceSerializer"/> use <see cref="JsonSerializerOptions"/> extensions
 /// </summary>
 public static class SequenceJsonSerializerOptionsExtensions
 {
+    const string RequiresUnreferencedCodeMessage = "Uses JsonSerializerOptions.Default which may require reflection.";
+    const string RequiresDynamicCodeMessage = "May not be AOT compatible.";
+    static string GenerateErrorMessage<T>()
+     => $"JsonTypeInfo<{typeof(T).FullName}> not found. " +
+        $"Ensure the type is registered in JsonSerializerOptions.TypeInfoResolver.";
     extension(SequenceSerializer)
     {
         /// <summary>
@@ -26,9 +31,7 @@ public static class SequenceJsonSerializerOptionsExtensions
             => jsonSerializerOptions.GetTypeInfo(typeof(T)) switch
             {
                 JsonTypeInfo<T> jsonTypeInfo => SequenceSerializer.SerializeAsync(writer, enumerable, jsonTypeInfo, options, cancellationToken),
-                _ => throw new InvalidOperationException(
-                    $"JsonTypeInfo<{typeof(T).FullName}> not found. " +
-                    $"Ensure the type is registered in JsonSerializerOptions.TypeInfoResolver."),
+                _ => throw new InvalidOperationException(GenerateErrorMessage<T>()),
             };
 
         /// <summary>
@@ -44,9 +47,7 @@ public static class SequenceJsonSerializerOptionsExtensions
             => jsonSerializerOptions.GetTypeInfo(typeof(T)) switch
             {
                 JsonTypeInfo<T> jsonTypeInfo => SequenceSerializer.DeserializeAsyncEnumerable(reader, jsonTypeInfo, options, cancellationToken),
-                _ => throw new InvalidOperationException(
-                    $"JsonTypeInfo<{typeof(T).FullName}> not found. " +
-                    $"Ensure the type is registered in JsonSerializerOptions.TypeInfoResolver."),
+                _ => throw new InvalidOperationException(GenerateErrorMessage<T>()),
             };
 
         /// <summary>
@@ -58,8 +59,8 @@ public static class SequenceJsonSerializerOptionsExtensions
         /// <param name="options"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [RequiresUnreferencedCode("Uses JsonSerializerOptions which may require reflection.")]
-        [RequiresDynamicCode("May not be AOT compatible.")]
+        [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+        [RequiresDynamicCode(RequiresDynamicCodeMessage)]
         public static Task SerializeAsync<T>(PipeWriter writer, IAsyncEnumerable<T> enumerable, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
             => SerializeAsync(writer, enumerable, JsonSerializerOptions.Default, options, cancellationToken);
 
@@ -71,8 +72,8 @@ public static class SequenceJsonSerializerOptionsExtensions
         /// <param name="options"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [RequiresUnreferencedCode("Uses JsonSerializerOptions which may require reflection.")]
-        [RequiresDynamicCode("May not be AOT compatible.")]
+        [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+        [RequiresDynamicCode(RequiresDynamicCodeMessage)]
         public static IAsyncEnumerable<T> DeserializeAsyncEnumerable<T>(PipeReader reader, ISequenceSerializerReadOptions options, CancellationToken cancellationToken = default)
             => DeserializeAsyncEnumerable<T>(reader, JsonSerializerOptions.Default, options, cancellationToken);
     }

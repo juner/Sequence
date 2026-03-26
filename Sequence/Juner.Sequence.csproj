@@ -8,7 +8,7 @@
     <InternalsVisibleTo Include="Juner.Sequence.Tests" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="System.IO.Pipelines" />
   </ItemGroup>
 

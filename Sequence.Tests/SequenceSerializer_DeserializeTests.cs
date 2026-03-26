@@ -283,33 +283,6 @@ public class SequenceSerializer_DeserializeTests
     }
 
     [TestMethod]
-    public async Task Deserialize_With_Encoding()
-    {
-        var json = "{\"Id\":1,\"Name\":\"あ\"}\n";
-
-        var bytes = Encoding.Unicode.GetBytes(json);
-        await using var stream = new MemoryStream(bytes);
-        stream.Seek(0, SeekOrigin.Begin);
-
-        var reader = PipeReader.Create(stream);
-
-        var results = new List<TestData>();
-
-        await foreach (var item in EncodeExntensions.DeserializeAsyncEnumerable(
-            reader,
-            GetTypeInfo(),
-            SequenceSerializerOptions.JsonLines,
-            Encoding.Unicode,
-            CancellationToken))
-        {
-            results.Add(item);
-        }
-
-        Assert.HasCount(1, results);
-        Assert.AreEqual("あ", results[0].Name);
-    }
-
-    [TestMethod]
     public async Task Should_Throw_On_Invalid_Json()
     {
         var reader = PipeHelper.CreateReader(
@@ -435,7 +408,7 @@ public class SequenceSerializer_DeserializeTests
         var reader = PipeReader.Create(stream);
         await Assert.ThrowsAsync<Exception>(async () =>
         {
-            await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+            await foreach (var _ in SequenceSerializerEncodeExntensions.DeserializeAsyncEnumerable(
                 reader,
                 GetTypeInfo(),
                 SequenceSerializerOptions.JsonLines,

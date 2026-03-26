@@ -13,6 +13,10 @@
 			"path": "./Sequence.Tests",
 		},
 		{
+			"name": "samples/Juner.Sequence",
+			"path": "./samples/Sequence",
+		},
+		{
 			"name": "Juner.AspNetCore.Sequence",
 			"path": "./AspNetCore.Sequence",
 		},
@@ -21,16 +25,16 @@
 			"path": "./AspNetCore.Sequence.Tests",
 		},
 		{
+			"name": "samples/Juner.AspNetCore.Sequence",
+			"path": "./samples/AspNetCore.Sequence",
+		},
+		{
 			"name": "Juner.Http.Sequence",
 			"path": "./Http.Sequence",
 		},
 		{
 			"name": "Juner.Http.Sequence.Tests",
 			"path": "./Http.Sequence.Tests",
-		},
-		{
-			"name": "samples",
-			"path": "./samples",
 		}
 	],
 	"settings": {

@@ -99,7 +99,7 @@ internal static class InternalFormatWriter
         if (SelectedEncoding == null || SelectedEncoding == Encoding.UTF8)
             return SequenceSerializer.SerializeAsync(httpContext.Response.BodyWriter, newValues, jsonTypeInfo2, options, cancellationToken);
         else
-            return EncodeExntensions.SerializeAsync(httpContext.Response.BodyWriter, newValues, jsonTypeInfo2, options, SelectedEncoding, cancellationToken);
+            return SequenceSerializerEncodeExntensions.SerializeAsync(httpContext.Response.BodyWriter, newValues, jsonTypeInfo2, options, SelectedEncoding, cancellationToken);
     }
     static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(ChannelReader<T>? values, [EnumeratorCancellation] CancellationToken cancellationToken)
     {

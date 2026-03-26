@@ -6,9 +6,9 @@ using System.Text.Json.Serialization.Metadata;
 namespace Juner.Sequence.Extensions;
 
 /// <summary>
-/// SequneceSerializer Change Encoding Extensions
+/// <see cref="SequenceSerializer"/>  Change <see cref="Encoding"/> Extensions
 /// </summary>
-public static class EncodeExntensions
+public static class SequenceSerializerEncodeExntensions
 {
     extension(SequenceSerializer)
     {
@@ -33,19 +33,8 @@ public static class EncodeExntensions
             return WrappedSerializeAsync(Encoding.CreateTranscodingStream(writer.AsStream(), encoding, Encoding.UTF8, leaveOpen: true), enumerable, jsonTypeInfo, options, cancellationToken);
             static async Task WrappedSerializeAsync(Stream stream, IAsyncEnumerable<T> enumerable, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
             {
-                await using var _ = stream;
-                var writer = PipeWriter.Create(stream);
-                try
-                {
-                    await SequenceSerializer.SerializeAsync(writer, enumerable, jsonTypeInfo, options, cancellationToken);
-                    await writer.CompleteAsync();
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    await writer.CompleteAsync(ex);
-                    throw;
-                }
+                await using (stream)
+                    await SequenceSerializer.SerializeAsync(stream, enumerable, jsonTypeInfo, options, cancellationToken);
             }
         }
 
@@ -69,12 +58,11 @@ public static class EncodeExntensions
             return WrappedDeserializeAsyncEnumerable(Encoding.CreateTranscodingStream(reader.AsStream(), encoding, Encoding.UTF8, leaveOpen: true), jsonTypeInfo, options, cancellationToken);
             static async IAsyncEnumerable<T> WrappedDeserializeAsyncEnumerable(Stream stream, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerReadOptions options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
             {
-                await using var _ = stream;
-                var reader = PipeReader.Create(stream);
-                await foreach (var item in SequenceSerializer
-                    .DeserializeAsyncEnumerable(reader, jsonTypeInfo, options, cancellationToken)
-                    .WithCancellation(cancellationToken))
-                    yield return item;
+                await using (stream)
+                    await foreach (var item in SequenceSerializer
+                        .DeserializeAsyncEnumerable(stream, jsonTypeInfo, options, cancellationToken)
+                        .WithCancellation(cancellationToken))
+                        yield return item;
 
             }
         }

@@ -169,7 +169,7 @@ public class SequenceSerializer_SerializeTests
 
         var typeInfo = (JsonTypeInfo<string>)JsonSerializerOptions.Default.GetTypeInfo(typeof(string));
 
-        await EncodeExntensions.SerializeAsync(
+        await SequenceSerializerEncodeExntensions.SerializeAsync(
             writer,
             Data(),
             typeInfo,
