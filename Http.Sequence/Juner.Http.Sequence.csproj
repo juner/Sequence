@@ -4,6 +4,31 @@
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Description>SStreaming JSON sequence support for HttpClient and HttpContent.
+Seamlessly send and receive NDJSON, JSON Lines, and JSON Sequence using IAsyncEnumerable.
+Built on System.Text.Json and Juner.Sequence.</Description>
+    <PackageTags>httpclient;httpcontent;streaming;json;ndjson;jsonlines;json-seq;iasyncenumerable;system-text-json</PackageTags>
+    <PackageProjectUrl>https://github.com/juner/Sequence</PackageProjectUrl>
+    <IsPackable>True</IsPackable>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="./README.md" Pack="true" PackagePath="\" />
+    <None Include="../LICENSE" Pack="true" PackagePath="\" />
+    <None Include="../icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Juner.Http.Sequence.Tests" />
   </ItemGroup>

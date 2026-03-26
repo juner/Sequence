@@ -28,31 +28,21 @@ public static class HttpContentExtensions
         this HttpContent content,
         JsonTypeInfo<T> typeInfo,
         CancellationToken cancellationToken = default)
-    {
-
-        var stream = content.ReadAsStream(cancellationToken);
-        var reader = PipeReader.Create(stream);
-
-        return SequenceSerializer.DeserializeAsyncEnumerable(
-            reader,
+        => ReadSequenceEnumerable<T>(
+            content,
             typeInfo,
             SequenceSerializerOptions.JsonSequence,
-            cancellationToken);
-    }
+            cancellationToken
+        );
 
     public static IAsyncEnumerable<T> ReadJsonLinesAsyncEnumerable<T>(
         this HttpContent content,
         JsonTypeInfo<T> typeInfo,
         CancellationToken cancellationToken = default)
-    {
-
-        var stream = content.ReadAsStream(cancellationToken);
-        var reader = PipeReader.Create(stream);
-
-        return SequenceSerializer.DeserializeAsyncEnumerable(
-            reader,
+        => ReadSequenceEnumerable<T>(
+            content,
             typeInfo,
             SequenceSerializerOptions.JsonLines,
-            cancellationToken);
-    }
+            cancellationToken
+        );
 }
