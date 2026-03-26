@@ -4,13 +4,26 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Deterministic>true</Deterministic>
-        <LangVersion>default</LangVersion>
         <LangVersion>14</LangVersion>
         <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
         <WarningsAsErrors>true</WarningsAsErrors>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <TrimmerSingleWarn>false</TrimmerSingleWarn>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
+
+    <PropertyGroup>
+        <Version>1.0.0-preview-2</Version>
+        <FileVersion>1.0.0.2</FileVersion>
+        <AssemblyVersion>1.0.0.2</AssemblyVersion>
+        <Authors>juner</Authors>
+        <Company>juner</Company>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/juner/Sequence</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    </PropertyGroup>
+
     <ItemGroup>
         <CompilerVisibleProperty Include="RootNamespace" />
         <CompilerVisibleProperty Include="ProjectDir" />

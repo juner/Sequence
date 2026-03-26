@@ -1,0 +1,29 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="icon.png" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/AspNetCore.Sequence/">
+    <File Path="samples/AspNetCore.Sequence/appsettings.Development.json" />
+    <File Path="samples/AspNetCore.Sequence/appsettings.json" />
+    <File Path="samples/AspNetCore.Sequence/MinimalApiJsonSequenceStreamingSample.cs" />
+    <File Path="samples/AspNetCore.Sequence/MvcJsonSequenceStreamingSample.cs" />
+  </Folder>
+  <Folder Name="/samples/AspNetCore.Sequence/Properties/">
+    <File Path="samples/AspNetCore.Sequence/Properties/launchSettings.json" />
+  </Folder>
+  <Folder Name="/samples/Sequence/">
+    <File Path="samples/Sequence/BenchMark.cs" />
+  </Folder>
+  <Project Path="AspNetCore.Sequence.Tests/Juner.AspNetCore.Sequence.Tests.csproj" />
+  <Project Path="AspNetCore.Sequence/Juner.AspNetCore.Sequence.csproj" />
+  <Project Path="Http.Sequence.Tests/Juner.Http.Sequence.Tests.csproj" />
+  <Project Path="Http.Sequence/Juner.Http.Sequence.csproj" />
+  <Project Path="Sequence.Tests/Juner.Sequence.Tests.csproj" />
+  <Project Path="Sequence/Juner.Sequence.csproj" />
+</Solution>
