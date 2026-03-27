@@ -1,164 +1,148 @@
 #!/usr/bin/env dotnet run
 #:sdk Microsoft.NET.Sdk
-#:project ../../Sequence/Juner.Sequence.csproj
 #:property TargetFramework=net10.0
 #:property TargetFrameworks=net8.0;net9.0;net10.0
 #:property PublishAot=false
 #:property Configuration=Release
 #:property Optimize=true
+#:property LangVersion=14
+#:package BenchmarkDotNet
+#:package Juner.Sequence@1.0.0-preview-2
 
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Text.Json.Serialization;
-using Juner.Sequence;
+using System.Text.Json.Serialization.Metadata;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
 
 // ==========================
-// Benchmark Config
+// Entry Point
 // ==========================
-const int Count = 100_000;
+BenchmarkRunner.Run<Juner.Sequence.BenchMarkSample.SequenceBenchmarks>(args: args);
 
-// ==========================
-// Data
-// ==========================
-static async IAsyncEnumerable<TestData> Generate(int count)
+
+namespace Juner.Sequence.BenchMarkSample
 {
-    for (var i = 0; i < count; i++)
-    {
-        yield return new TestData(i, $"Name-{i}");
-    }
-}
-
-// ==========================
-// Benchmark Runner
-// ==========================
-static async Task RunAsync(string[] args, CancellationToken cancellationToken = default)
-{
-    var count = Count;
-    if (args is { Length: > 0 } && int.Parse(args[0]) is { } count2)
-        count = count2;
-    var jsonTypeInfo = AppJsonContext.Default.TestData;
-
-    Console.WriteLine($"Count: {count}");
-    Console.WriteLine();
-
     // ==========================
-    // Serialize Benchmark
+    // Benchmark Config
     // ==========================
+    [InProcess]
+    public class SequenceBenchmarks
     {
-        var pipe = new Pipe();
+        [Params(100_000)]
+        public int Count;
 
-        var sw = Stopwatch.StartNew();
+        private JsonTypeInfo<TestData> _jsonTypeInfo = null!;
 
-        var writerTask = WriteToComplete();
-        async Task WriteToComplete()
+        [GlobalSetup]
+        public void Setup() => _jsonTypeInfo = AppJsonContext.Default.TestData;
+
+        // ==========================
+        // Data
+        // ==========================
+        private static async IAsyncEnumerable<TestData> Generate(int count)
         {
-            await SequenceSerializer.SerializeAsync(
-                pipe.Writer,
-                Generate(count),
-                jsonTypeInfo,
-                SequenceSerializerOptions.JsonLines,
-                cancellationToken);
-            await pipe.Writer.CompleteAsync();
+            for (var i = 0; i < count; i++)
+            {
+                yield return new TestData(i, $"Name-{i}");
+            }
         }
 
-        var readerTask = Consume(pipe.Reader);
-
-        await Task.WhenAll(writerTask, readerTask);
-
-        sw.Stop();
-
-        Console.WriteLine($"Serialize: {sw.ElapsedMilliseconds} ms");
-    }
-
-    // ==========================
-    // Deserialize Benchmark
-    // ==========================
-    {
-        var pipe = new Pipe();
-
-        // 事前にデータ流し込む
-        await SequenceSerializer.SerializeAsync(
-            pipe.Writer,
-            Generate(count),
-            jsonTypeInfo,
-            SequenceSerializerOptions.JsonLines,
-            cancellationToken);
-
-        await pipe.Writer.CompleteAsync();
-
-        var sw = Stopwatch.StartNew();
-
-        var readCount = 0;
-
-        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
-            pipe.Reader,
-            jsonTypeInfo,
-            SequenceSerializerOptions.JsonLines,
-            cancellationToken))
+        // ==========================
+        // Serialize Benchmark
+        // ==========================
+        [Benchmark]
+        public async Task Serialize()
         {
-            readCount++;
+            var pipe = new Pipe();
+
+            var writerTask = WriteAsync(pipe.Writer, Count);
+
+            async Task WriteAsync(PipeWriter writer, int count, CancellationToken cancellationToken = default)
+            {
+                await SequenceSerializer.SerializeAsync(
+                    writer,
+                    Generate(count),
+                    _jsonTypeInfo,
+                    SequenceSerializerOptions.JsonLines,
+                    cancellationToken);
+                await writer.CompleteAsync();
+            }
+
+            var readerTask = Consume(pipe.Reader);
+
+            await Task.WhenAll(writerTask, readerTask);
         }
 
-        sw.Stop();
+        // ==========================
+        // Deserialize Benchmark
+        // ==========================
+        [Benchmark]
+        public async Task Deserialize()
+        {
+            var pipe = new Pipe();
+            var WriteTask = Writing(pipe.Writer, _jsonTypeInfo, Count);
+            static async Task Writing(PipeWriter writer, JsonTypeInfo<TestData> jsonTypeInfo, int Count, CancellationToken cancellationToken = default)
+            {
+                // preload
+                await SequenceSerializer.SerializeAsync(
+                    writer,
+                    Generate(Count),
+                    jsonTypeInfo,
+                    SequenceSerializerOptions.JsonLines,
+                    cancellationToken);
 
-        Console.WriteLine($"Deserialize: {sw.ElapsedMilliseconds} ms");
-        Console.WriteLine($"Read Count: {readCount}");
+                await writer.CompleteAsync();
+            }
+            var ReadTask = Reading(pipe.Reader, _jsonTypeInfo);
+            static async Task<int> Reading(PipeReader reader, JsonTypeInfo<TestData> jsonTypeInfo, CancellationToken cancellationToken = default)
+            {
+                var readCount = 0;
+
+                await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+                    reader,
+                    jsonTypeInfo,
+                    SequenceSerializerOptions.JsonLines,
+                    cancellationToken))
+                {
+                    readCount++;
+                }
+                return readCount;
+            }
+            await Task.WhenAll([WriteTask, ReadTask]);
+
+        }
+
+        // ==========================
+        // Helper
+        // ==========================
+        private static async Task Consume(PipeReader reader)
+        {
+            while (true)
+            {
+                var result = await reader.ReadAsync();
+                var buffer = result.Buffer;
+
+                reader.AdvanceTo(buffer.End);
+
+                if (result.IsCompleted)
+                    break;
+            }
+
+            await reader.CompleteAsync();
+        }
     }
-}
 
-// ==========================
-// Helper
-// ==========================
-static async Task Consume(PipeReader reader)
-{
-    while (true)
+    // ==========================
+    // Model
+    // ==========================
+    public record TestData(int Id, string Name);
+
+    // ==========================
+    // Source Generator Context
+    // ==========================
+    [JsonSerializable(typeof(TestData))]
+    internal partial class AppJsonContext : JsonSerializerContext
     {
-        var result = await reader.ReadAsync();
-        var buffer = result.Buffer;
-
-        // discard
-        reader.AdvanceTo(buffer.End);
-
-        if (result.IsCompleted)
-            break;
     }
-
-    await reader.CompleteAsync();
-}
-
-var source = new CancellationTokenSource();
-Console.CancelKeyPress += (o, v) =>
-{
-    if (v.Cancel) source.CancelAsync();
-};
-// ==========================
-// Run
-// ==========================
-try
-{
-    await RunAsync(args, source.Token);
-    return 0;
-}
-catch (OperationCanceledException)
-{
-    return 1;
-}
-catch (Exception e)
-{
-    Console.Error.WriteLine(e.Message);
-    return -1;
-}
-
-
-// ==========================
-// Model
-// ==========================
-record TestData(int Id, string Name);
-
-// ==========================
-// Source Generator Context
-// ==========================
-[JsonSerializable(typeof(TestData))]
-internal partial class AppJsonContext : JsonSerializerContext
-{
 }
