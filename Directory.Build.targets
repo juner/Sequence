@@ -1,6 +1,7 @@
 <Project>
     <PropertyGroup Condition="'$(IsPackable)' == 'true' AND $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
         <IsAotCompatible>true</IsAotCompatible>
+        <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(IsPackable)' == 'true'">
