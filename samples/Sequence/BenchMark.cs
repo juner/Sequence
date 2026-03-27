@@ -109,7 +109,7 @@ namespace Juner.Sequence.BenchMarkSample
                 }
                 return readCount;
             }
-            await Task.WhenAll([WriteTask, ReadTask]);
+            await Task.WhenAll(WriteTask, ReadTask);
 
         }
 
