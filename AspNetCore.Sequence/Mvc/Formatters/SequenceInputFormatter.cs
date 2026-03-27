@@ -16,6 +16,8 @@ using System.Threading.Channels;
 
 namespace Juner.AspNetCore.Sequence.Mvc.Formatters;
 
+[RequiresDynamicCode("Uses dynamic generic delegate generation")]
+[RequiresUnreferencedCode("Uses reflection to create generic methods")]
 public partial class SequenceInputFormatter : TextInputFormatter
 {
 
@@ -58,13 +60,7 @@ public partial class SequenceInputFormatter : TextInputFormatter
         return true;
     }
 
-    ILogger GetLogger(IServiceProvider provider)
-    {
-        var loggerType = typeof(ILogger<>).MakeGenericType(GetType());
-        var logger = provider.GetService(loggerType) as ILogger;
-        if (logger is not null) return logger;
-        return NullLogger.Instance;
-    }
+    ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<SequenceInputFormatter>>() ?? (ILogger)NullLogger.Instance;
     static JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
     {
         var jsonOptions = provider.GetService<IOptions<JsonOptions>>()?.Value;

@@ -4,4 +4,5 @@ public interface IContent
 {
     string ContentType { get; }
     bool IsStreaming { get; }
+    Type? NoStreamingType { get; }
 }

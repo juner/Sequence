@@ -5,4 +5,4 @@ namespace Juner.AspNetCore.Sequence.Http;
 /// </summary>
 /// <param name="ContentType"></param>
 /// <param name="IsStreaming"></param>
-public record Content(string ContentType, bool IsStreaming) : IContent;
+public record Content(string ContentType, bool IsStreaming, Type? NoStreamingType = null) : IContent;

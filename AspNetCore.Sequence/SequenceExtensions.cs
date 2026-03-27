@@ -1,6 +1,7 @@
 ﻿using Juner.AspNetCore.Sequence.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable IDE0130 // Namespace がフォルダー構造と一致しません
 namespace Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class SequenceExtensions
 {
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     public static IMvcBuilder AddSequenceFormatter(this IMvcBuilder builder)
     {
         builder.AddSequenceInputFormatter();
@@ -16,6 +19,9 @@ public static class SequenceExtensions
         builder.AddJsonLineOutputFormatter();
         return builder;
     }
+
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     public static IMvcBuilder AddSequenceInputFormatter(this IMvcBuilder builder)
     {
         builder.Services.Configure<MvcOptions>(options =>
@@ -25,8 +31,19 @@ public static class SequenceExtensions
         });
         return builder;
     }
+
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     public static IMvcBuilder AddJsonSequenceOutputFormatter(this IMvcBuilder builder) => builder.AddOutputFormatter<JsonSequenceOutputFormatter>();
+
+
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     public static IMvcBuilder AddNdJsonOutputFormatter(this IMvcBuilder builder) => builder.AddOutputFormatter<NdJsonOutputFormatter>();
+
+
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     public static IMvcBuilder AddJsonLineOutputFormatter(this IMvcBuilder builder) => builder.AddOutputFormatter<JsonLineOutputFormatter>();
     static IMvcBuilder AddOutputFormatter<T>(this IMvcBuilder builder)
         where T : TextOutputFormatter, new()

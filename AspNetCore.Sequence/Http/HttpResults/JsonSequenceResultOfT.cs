@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Reflection;
 using System.Threading.Channels;
 
@@ -63,4 +66,5 @@ public sealed class JsonSequenceResult<T> : SequenceResultBase<T>, IEndpointMeta
             typeof(T),
             [new Content(CONTENT_TYPE, true)]));
     }
+    protected override ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<JsonSequenceResult<T>>>() ?? (ILogger)NullLogger.Instance;
 }

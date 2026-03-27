@@ -1,5 +1,6 @@
 ﻿using Juner.Sequence;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Channels;
@@ -29,6 +30,8 @@ internal class InternalFormatReader
         };
     }
 
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     public static object ReadResult(
         Type elementType,
         EnumerableType enumerableType,
@@ -59,6 +62,8 @@ internal class InternalFormatReader
 
     static readonly ConcurrentDictionary<Type, Delegate> cache = new();
 
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     static Delegate CreateDelegate(Type elementType)
     {
         var method =
