@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>Streaming JSON sequence support for ASP.NET Core.
 Supports NDJSON, JSON Lines, JSON Sequence, and JSON arrays using IAsyncEnumerable.</Description>

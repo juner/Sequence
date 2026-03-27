@@ -1,9 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <IsAotCompatible>true</IsAotCompatible>
-  </PropertyGroup>
-
   <PropertyGroup>
     <Description>High-performance streaming JSON sequence serialization for .NET.
 Supports NDJSON, JSON Lines, JSON Sequence, and JSON array formats using IAsyncEnumerable.

@@ -1,4 +1,19 @@
 <Project>
+    <PropertyGroup Condition="'$(IsPackable)' == 'true' AND $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+        <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+        <Version>1.0.0-preview-2</Version>
+        <FileVersion>1.0.0.2</FileVersion>
+        <AssemblyVersion>1.0.0.2</AssemblyVersion>
+        <Authors>juner</Authors>
+        <Company>juner</Company>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/juner/Sequence</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    </PropertyGroup>
+
     <ItemGroup>    
         <PackageReference Update="coverlet.collector" Version="8.0.0" />
         <PackageReference Update="coverlet.msbuild" Version="8.0.0" />

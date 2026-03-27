@@ -1,9 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <IsAotCompatible>true</IsAotCompatible>
-  </PropertyGroup>
-
   <PropertyGroup>
     <Description>SStreaming JSON sequence support for HttpClient and HttpContent.
 Seamlessly send and receive NDJSON, JSON Lines, and JSON Sequence using IAsyncEnumerable.

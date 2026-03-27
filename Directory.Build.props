@@ -1,4 +1,5 @@
 <Project>
+
     <PropertyGroup>
         <TargetFrameworks>net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -6,22 +7,9 @@
         <Deterministic>true</Deterministic>
         <LangVersion>14</LangVersion>
         <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
-        <WarningsAsErrors>true</WarningsAsErrors>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <TrimmerSingleWarn>false</TrimmerSingleWarn>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <Version>1.0.0-preview-2</Version>
-        <FileVersion>1.0.0.2</FileVersion>
-        <AssemblyVersion>1.0.0.2</AssemblyVersion>
-        <Authors>juner</Authors>
-        <Company>juner</Company>
-        <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/juner/Sequence</RepositoryUrl>
-        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     </PropertyGroup>
 
     <ItemGroup>
