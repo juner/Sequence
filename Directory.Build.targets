@@ -1,6 +1,12 @@
 <Project>
-    <PropertyGroup Condition="'$(IsPackable)' == 'true' AND $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <PropertyGroup 
+        Condition="'$(IsPackable)' == 'true' AND $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))"
+    >
         <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+    <PropertyGroup
+        Condition="'$(IsPackable)' == 'true' AND $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0')) AND '$(ProjectName)' != 'Juner.AspNetCore.Sequence'"
+    >
         <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
     </PropertyGroup>
 
