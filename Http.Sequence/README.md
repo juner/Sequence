@@ -1,6 +1,11 @@
 # Juner.Http.Sequence
 
-HTTP client extensions for **record‑oriented streaming JSON** in .NET.
+HTTP streaming for record-oriented JSON formats in .NET.
+
+It enables end-to-end streaming from HTTP transport to application code,
+without buffering the entire payload.
+
+This allows true streaming pipelines over HTTP with minimal allocations.
 
 `Juner.Http.Sequence` integrates `Juner.Sequence` with `HttpContent` and `HttpRequestMessage`,
 providing end‑to‑end streaming support for formats such as:
@@ -35,6 +40,8 @@ public partial class MyJsonContext : JsonSerializerContext { }
 
 ## Reading (streaming)
 
+Assuming you obtained an `HttpContent` from `HttpResponseMessage`:
+
 ### Core API (AOT‑safe)
 
 ```csharp
@@ -65,9 +72,10 @@ await foreach (var item in content.ReadJsonSequenceAsyncEnumerable(
 
 ### Notes
 
-- Uses `PipeReader.Create(stream)` internally  
-- Throws `ArgumentException` if `options.IsInvalid`  
-- Fully streaming: no buffering of the entire HTTP payload  
+- Uses `PipeReader.Create(stream)` internally
+- Throws `ArgumentException` if `options.IsInvalid`
+- Fully streaming: no buffering of the entire HTTP payload
+- Backpressure is naturally handled via `IAsyncEnumerable`
 
 ---
 
@@ -84,6 +92,8 @@ var request = new HttpRequestMessage(HttpMethod.Post, url)
         "application/jsonl");
 ```
 
+The content type should match the selected sequence format.
+
 ### Format‑specific shortcuts
 
 ```csharp
@@ -94,9 +104,10 @@ request.WithNdJsonContent(source, MyJsonContext.Default.MyType);
 
 ### Notes
 
-- Uses `PipeWriter.Create(stream)` internally  
-- Does not compute content length (`TryComputeLength` returns false)  
-- Streaming is performed record‑by‑record  
+- Uses `PipeWriter.Create(stream)` internally
+- Does not compute content length (`TryComputeLength` returns false)
+- Streaming is performed record‑by‑record
+- Suitable for chunked transfer encoding
 
 ---
 
@@ -207,6 +218,8 @@ request.WithSequenceContent(
 
 ## Supported Formats
 
+The following formats are supported:
+
 | Format | Content-Type | Notes |
 |--------|--------------|-------|
 | NDJSON | application/x-ndjson | newline‑delimited |
@@ -217,9 +230,10 @@ request.WithSequenceContent(
 
 ## About JSON Array (`application/json`)
 
-JSON arrays are **not streaming formats**.
+JSON arrays are already well supported by standard JSON APIs.
 
-For this reason, **Juner.Http.Sequence does not support JSON arrays**.
+Juner.Http.Sequence focuses on record-oriented streaming formats,
+and does not provide support for JSON arrays.
 
 If you need to read or write JSON arrays, use:
 
@@ -233,30 +247,36 @@ or the standard `JsonSerializer`.
 
 ## Architecture
 
+The library is built as a thin HTTP layer on top of Juner.Sequence:
+
 ```mermaid
 graph TD;
-    A[Juner.Sequence<br/>Core] --> B[Juner.Http.Sequence<br/>Http Integration];
-    B --> C[HttpContent Extensions];
-    B --> D[HttpRequestMessage Extensions];
-    B --> E[JsonSerializerOptions Extensions<br/>(not AOT‑safe)];
-    B --> F[JsonSerializerOptions.Default Extensions<br/>(explicitly not AOT‑safe)];
-    B --> G[JsonTypeInfo (non‑generic)<br/>Advanced];
+    A[Juner.Sequence<br/>Core]
+    B[Juner.Http.Sequence]
+
+    A --> B
+
+    B --> C[HttpContent Extensions]
+    B --> D[HttpRequestMessage Extensions]
+
+    B --> E[AOT-safe APIs]
+    B --> F[Non AOT-safe APIs]
 ```
 
 ---
 
 ## When to Use
 
-- Consuming large streaming JSON responses  
-- Real‑time event streams over HTTP  
-- High‑performance pipelines  
-- Native AOT applications  
-- Avoiding buffering entire HTTP payloads  
+- Consuming large streaming JSON responses
+- Real‑time event streams over HTTP
+- High‑performance pipelines
+- Native AOT applications
+- Avoiding buffering entire HTTP payloads
 
 ## When NOT to Use
 
-- Small payloads → `HttpContent.ReadFromJsonAsync` is simpler  
-- JSON arrays → use standard JSON APIs  
+- Small payloads → `HttpContent.ReadFromJsonAsync` is simpler
+- JSON arrays → use standard JSON APIs
 - Native AOT scenarios → avoid `JsonSerializerOptions.Default` (not AOT‑safe)
 
 ---
