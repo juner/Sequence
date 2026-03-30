@@ -12,6 +12,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
+#if !NET8_0_OR_GREATER
+using System.Text.Json.Serialization.Metadata;
+#endif
 
 namespace Juner.AspNetCore.Sequence.Mvc.Formatters;
 
