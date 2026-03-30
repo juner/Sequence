@@ -6,13 +6,15 @@
 [![.NET Test](https://github.com/juner/Sequence/actions/workflows/test.yml/badge.svg)](https://github.com/juner/Sequence/actions/workflows/test.yml)
 
 High-performance streaming JSON serialization for .NET using `IAsyncEnumerable<T>`.  
-Supports modern streaming-friendly JSON formats:
+Ideal for large datasets, real‑time APIs, and memory‑efficient processing.
+
+Supports modern streaming‑friendly JSON formats:
 
 - **NDJSON** (`application/x-ndjson`)
 - **JSON Lines** (`application/jsonl`)
 - **JSON Sequence** (`application/json-seq`)
 
-Built on top of `System.Text.Json` with an **AOT-friendly**, **zero-allocation**, and **layered** design.
+Built on top of `System.Text.Json` with an **AOT‑friendly**, **zero‑allocation**, and **layered** design.
 
 ---
 
@@ -22,13 +24,13 @@ Built on top of `System.Text.Json` with an **AOT-friendly**, **zero-allocation**
 |--------|-------------|
 | **Juner.Sequence** | Core streaming serializer (no HTTP dependency) |
 | **Juner.Http.Sequence** | `HttpClient` / `HttpContent` integration |
-| **Juner.AspNetCore.Sequence** | ASP.NET Core input/output streaming support |
+| **Juner.AspNetCore.Sequence** | ASP.NET Core input/output streaming support (no dependency on the HTTP package) |
 
 ---
 
 ## Features
 
-- ⚡ High-performance streaming JSON  
+- ⚡ High‑performance streaming JSON
 - 🔄 Full `IAsyncEnumerable<T>` support  
 - 🧩 Multiple streaming formats (NDJSON / JSON Lines / JSON Sequence)  
 - 🛡️ AOT‑friendly (`JsonTypeInfo<T>`‑based API; no reflection)  
@@ -45,9 +47,24 @@ graph TD;
     A --> C[Juner.AspNetCore.Sequence<br/>ASP.NET Core];
 ```
 
+The architecture is intentionally layered:
+
+- `Juner.Sequence` is the core and has **no HTTP dependencies**.  
+- `Juner.Http.Sequence` adds **HttpClient** integration.  
+- `Juner.AspNetCore.Sequence` integrates directly with **ASP.NET Core** without depending on the HTTP package.
+
 ---
 
 ## Quick Start
+
+### JsonSerializerContext (AOT-safe)
+
+```csharp
+[JsonSerializable(typeof(MyType))]
+public partial class MyJsonContext : JsonSerializerContext { }
+```
+
+---
 
 ### Serialize (NDJSON)
 
@@ -79,6 +96,7 @@ await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
 
 ```csharp
 var request = new HttpRequestMessage(HttpMethod.Post, url)
+     // Content-Type is set automatically
     .WithNdJsonContent(source, MyJsonContext.Default.MyType);
 
 var response = await httpClient.SendAsync(request);
@@ -122,14 +140,14 @@ await foreach (var item in response.Content.ReadJsonLinesAsyncEnumerable<MyType>
 
 ## Notes on JSON Array Support
 
-> **Note**  
-> `application/json` (JSON arrays) is **not** a dedicated streaming format of this library.  
-> However, `Juner.AspNetCore.Sequence` accepts JSON arrays **only**:
+> **Note on JSON Arrays**  
+> `application/json` (JSON arrays) is **not** a streaming format and is not supported by the core library.  
+> However, `Juner.AspNetCore.Sequence` accepts JSON arrays **only** for:
 >
-> - when binding to `Sequence<T>` (Minimal API model binding), or  
-> - when using `SequenceResults.Sequence(source)`  
+> - Minimal API model binding (`Sequence<T>`)  
+> - `SequenceResults.Sequence(source)`  
 >
-> This is provided **for convenience only**, and is not part of the core streaming format set.
+> This is provided for convenience and is not part of the core streaming format set.
 
 ---
 
