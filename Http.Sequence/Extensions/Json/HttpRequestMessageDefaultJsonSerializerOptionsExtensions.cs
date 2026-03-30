@@ -37,7 +37,7 @@ public static class HttpRequestMessageDefaultJsonSerializerOptionsExtensions
             options,
             contentType,
             cancellationToken);
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -58,7 +58,7 @@ public static class HttpRequestMessageDefaultJsonSerializerOptionsExtensions
         SequenceSerializerOptions.JsonSequence,
         "application/json-seq",
         cancellationToken);
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -79,7 +79,7 @@ public static class HttpRequestMessageDefaultJsonSerializerOptionsExtensions
         SequenceSerializerOptions.JsonLines,
         "application/jsonl",
         cancellationToken);
-    
+
     /// <summary>
     /// 
     /// </summary>

@@ -13,7 +13,7 @@ public static class HttpContentJsonSerializerOptionsExtensions
     static string GenerateErrorMessage<T>()
      => $"JsonTypeInfo<{typeof(T).FullName}> not found. " +
         $"Ensure the type is registered in JsonSerializerOptions.TypeInfoResolver or source-generated context.";
-    
+
     /// <summary>
     /// 
     /// </summary>

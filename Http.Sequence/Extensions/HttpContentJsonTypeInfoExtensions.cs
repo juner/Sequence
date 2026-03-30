@@ -9,7 +9,7 @@ namespace Juner.Http.Sequence.Extensions;
 public static class HttpContentJsonTypeInfoExtensions
 {
     static string GetErrorMessage<T>(JsonTypeInfo jsonTypeInfo) => $"JsonTypeInfo<{typeof(T).FullName}> expected but got {jsonTypeInfo.GetType()}";
-    
+
     public static IAsyncEnumerable<T> ReadSequenceEnumerable<T>(
         this HttpContent content,
         JsonTypeInfo jsonTypeInfo,

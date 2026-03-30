@@ -84,7 +84,7 @@ public sealed class HttpContentExtensionsTests
     {
         var source = GetAsyncEnumerable(
             new TestData(1),
-            new TestData( 2)
+            new TestData(2)
         );
 
         var request = new HttpRequestMessage()

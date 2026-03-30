@@ -3,7 +3,6 @@ using Juner.AspNetCore.Sequence.Http;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Nodes;
 
 #pragma warning disable IDE0130 // Namespace がフォルダー構造と一致しません

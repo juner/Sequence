@@ -12,7 +12,7 @@ public static class HttpRequestMessageJsonSerializerOptionsExtensions
     static string GenerateErrorMessage<T>()
      => $"JsonTypeInfo<{typeof(T).FullName}> not found. " +
         $"Ensure the type is registered in JsonSerializerOptions.TypeInfoResolver or source-generated context.";
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -79,7 +79,7 @@ public static class HttpRequestMessageJsonSerializerOptionsExtensions
         SequenceSerializerOptions.JsonSequence,
         "application/json-seq",
         cancellationToken);
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -100,7 +100,7 @@ public static class HttpRequestMessageJsonSerializerOptionsExtensions
         SequenceSerializerOptions.JsonLines,
         "application/jsonl",
         cancellationToken);
-    
+
     /// <summary>
     /// 
     /// </summary>

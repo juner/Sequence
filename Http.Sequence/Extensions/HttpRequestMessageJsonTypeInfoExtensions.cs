@@ -77,7 +77,7 @@ public static class HttpRequestMessageJsonTypeInfoExtensions
         "application/json-seq",
         cancellationToken
     );
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -100,7 +100,7 @@ public static class HttpRequestMessageJsonTypeInfoExtensions
         "application/jsonl",
         cancellationToken
     );
-    
+
     /// <summary>
     /// 
     /// </summary>
