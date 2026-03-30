@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>SStreaming JSON sequence support for HttpClient and HttpContent.
-Seamlessly send and receive NDJSON, JSON Lines, and JSON Sequence using IAsyncEnumerable.
-Built on System.Text.Json and Juner.Sequence.</Description>
+    <Description>Streaming JSON sequence support for HttpClient and HttpContent.
+Send and receive NDJSON, JSON Lines, and JSON Sequence using IAsyncEnumerable&lt;T&gt;.
+Built on System.Text.Json and the Juner.Sequence core serializer.</Description>
     <PackageTags>httpclient;httpcontent;streaming;json;ndjson;jsonlines;json-seq;iasyncenumerable;system-text-json</PackageTags>
     <PackageProjectUrl>https://github.com/juner/Sequence</PackageProjectUrl>
     <IsPackable>True</IsPackable>
