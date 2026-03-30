@@ -6,7 +6,7 @@ This package integrates **Juner.Sequence** with ASP.NET Core, providing:
 
 - Streaming **input** via `SequenceInputFormatter` and `Sequence<T>`
 - Streaming **output** via `JsonSequenceResult`, `JsonLineResult`, `NdJsonResult`, and `SequenceResult`
-- Minimal API integration with natural syntax
+- Natural Minimal API integration
 - MVC integration through formatters and metadata
 - OpenAPI (.NET 10+) support for streaming schemas
 - Content negotiation for streaming formats
@@ -51,7 +51,8 @@ app.MapPost("/upload", async (Sequence<MyType> items) =>
 });
 ```
 
-`Sequence<T>` is an ASP.NET Core–native type that binds streaming JSON inputs.
+`Sequence<T>` is an ASP.NET Core–native type that represents a streaming JSON input,  
+allowing items to be consumed as they arrive without buffering.
 
 ---
 
@@ -67,7 +68,7 @@ app.MapPost("/upload", async (Sequence<MyType> items) =>
 
 # Streaming Output
 
-ASP.NET Core actions can return the following types as streaming JSON:
+The following return types are supported for streaming responses:
 
 | Return Type | Streaming? | Notes |
 |-------------|------------|-------|
@@ -132,7 +133,7 @@ Streaming is enabled for:
 
 # Content Negotiation
 
-`SequenceResult<T>` automatically selects the best output format based on the `Accept` header:
+`SequenceResult<T>` automatically selects the best streaming format based on the client's `Accept` header.
 
 | Accept | Output |
 |--------|--------|
@@ -149,9 +150,9 @@ return TypedResults.Sequence(values);
 
 # JSON Array (`application/json`)
 
-JSON arrays are **not** streaming formats.
+JSON arrays are not true streaming formats, as they require full buffering.
 
-`SequenceResult<T>` can return JSON arrays, but they are **fully buffered**.
+`SequenceResult<T>` can return JSON arrays, but they are fully buffered.
 
 For true streaming, use:
 
@@ -201,15 +202,35 @@ graph TD;
 
 # AOT Considerations
 
-ASP.NET Core formatters, metadata, and result types rely on:
+ASP.NET Core MVC formatters rely on:
 
-- dynamic code generation
-- reflection
-- `JsonSerializerOptions` and `TypeInfoResolver`
+- dynamic code generation  
+- reflection  
+- `JsonSerializerOptions` and `TypeInfoResolver`  
 
-Therefore, **this package is not AOT‑safe**.
+Because of these framework‑level constraints,  
+**MVC streaming (InputFormatter / OutputFormatter) is not AOT‑safe**.
 
-Native AOT applications cannot use this library.
+However:
+
+### ✔ Minimal API is AOT‑friendly
+
+When using only:
+
+- `Sequence<T>` (for streaming input)  
+- `JsonSequenceResult<T>`, `JsonLineResult<T>`, `NdJsonResult<T>`, `SequenceResult<T>` (for streaming output)
+
+no MVC formatters are involved, and  
+**Minimal API streaming works under Native AOT**.
+
+### Summary
+
+| Feature | AOT‑safe? | Notes |
+|--------|-----------|-------|
+| Minimal API streaming | ✔ | Uses `Sequence<T>` and result types only |
+| MVC streaming | ✘ | Requires formatters (dynamic code) |
+| OpenAPI (.NET 10+) | ✔ | Works in both modes |
+| JSON array fallback | ✔ | Uses built‑in JSON serialization |
 
 ---
 
