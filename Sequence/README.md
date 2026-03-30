@@ -1,6 +1,9 @@
 # Juner.Sequence
 
-High‑performance, AOT‑friendly streaming JSON serialization for .NET.
+High​‑performance, AOT-friendly streaming serializer for record-oriented JSON formats in .NET.
+
+Record-oriented formats represent a sequence of independent JSON values,
+rather than a single JSON array.
 
 `Juner.Sequence` provides zero‑allocation, fully streaming serialization and deserialization for **record‑oriented JSON formats**, including:
 
@@ -36,9 +39,10 @@ public partial class MyJsonContext : JsonSerializerContext { }
 
 ---
 
-### Serialize (NDJSON)
+### Serialize (NDJSON / JSON Lines)
 
 ```csharp
+// Serialize 
 await SequenceSerializer.SerializeAsync(
     writer,
     source,
@@ -92,7 +96,8 @@ Serialization falls back to a stream‑based implementation:
 writer.AsStream()
 ```
 
-This ensures compatibility while maintaining streaming behavior.
+This ensures compatibility, though it may introduce additional allocations
+compared to the PipeWriter-based fast path.
 
 ---
 
@@ -105,7 +110,7 @@ This ensures compatibility while maintaining streaming behavior.
 | Name | Description |
 |------|-------------|
 | `JsonSequence` | RFC 7464 (`RS` + JSON + `LF`) |
-| `JsonLines` | NDJSON / JSON Lines (`JSON` + `LF`) |
+| `JsonLines` | NDJSON / JSON Lines ( JSON + `LF`) |
 
 ### Invalid Options
 
@@ -128,9 +133,12 @@ Controls how flushing is performed during serialization.
 
 `PerRecord` improves real‑time behavior but reduces throughput.
 
+`PerRecord` is useful for real-time streaming scenarios (e.g. logs, HTTP streaming),
+while `None` maximizes throughput in batch processing.
+
 ---
 
-## Framing Engine
+## Framing Engine (Core Feature)
 
 The deserializer uses optimized fast‑paths for common formats:
 
@@ -261,10 +269,12 @@ Internally uses `PipeReader.Create(stream)` for deserialization.
 
 ## About JSON Array (`application/json`)
 
-JSON Array is **not a streaming format**.  
-For this reason, **Juner.Sequence does not support JSON arrays**.
+JSON arrays are already well supported by `JsonSerializer` for stream-based scenarios.
 
-Use `JsonSerializer` if you need to handle JSON arrays.
+Juner.Sequence is designed specifically for record-oriented streaming formats,
+where each JSON value can be processed independently.
+
+For this reason, JSON arrays are intentionally not supported.
 
 ---
 
