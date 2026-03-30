@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 
 #pragma warning disable IDE0130 // Namespace がフォルダー構造と一致しません
 namespace Microsoft.Extensions.DependencyInjection;
+#pragma warning restore IDE0130 // Namespace がフォルダー構造と一致しません
 
 public static class OpenApiExtensions
 {
