@@ -6,9 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
-using System.Net.Mime;
 using Juner.Sequence;
 
 #if !NET8_0_OR_GREATER
@@ -20,13 +18,7 @@ namespace Juner.AspNetCore.Sequence.Http.HttpResults;
 [DebuggerDisplay("{Values,nq}")]
 public partial class SequenceResult<T> : IResult
 {
-    ILogger GetLogger(IServiceProvider provider)
-    {
-        var loggerType = typeof(ILogger<>).MakeGenericType(GetType());
-        var logger = provider.GetService(loggerType) as ILogger;
-        if (logger is not null) return logger;
-        return NullLogger.Instance;
-    }
+    ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<SequenceResult<T>>>() ?? (ILogger)NullLogger.Instance;
     JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
     {
         var jsonOptions = provider.GetService<IOptions<JsonOptions>>()?.Value;
@@ -60,7 +52,7 @@ public partial class SequenceResult<T> : IResult
 #endif
         var values = ToAsyncEnumerable(httpContext.RequestAborted);
 
-        if (options.IsEmpty)
+        if (options.IsInvalid)
         {
             var jsonTypeInfo = serializerOptions.GetTypeInfo<IAsyncEnumerable<T>>();
 

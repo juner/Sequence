@@ -60,21 +60,23 @@ public static class StreamExtensions
         /// <param name="options"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async IAsyncEnumerable<T> DeserializeAsyncEnumerable<T>(Stream stream, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerReadOptions options, [EnumeratorCancellation]CancellationToken cancellationToken = default)
+        public static async IAsyncEnumerable<T> DeserializeAsyncEnumerable<T>(Stream stream, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerReadOptions options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var reader = PipeReader.Create(stream);
             await using var enumerator = SequenceSerializer.DeserializeAsyncEnumerable(reader, jsonTypeInfo, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
             var next = false;
             do
             {
-                try {
+                try
+                {
                     next = await enumerator.MoveNextAsync();
                     if (!next)
                     {
                         await reader.CompleteAsync();
                         yield break;
                     }
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     await reader.CompleteAsync(e);
                     throw;
@@ -82,7 +84,7 @@ public static class StreamExtensions
                 yield return enumerator.Current;
 
             } while (next);
-            
+
         }
     }
 }

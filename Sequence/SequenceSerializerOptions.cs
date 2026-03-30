@@ -83,9 +83,9 @@ public sealed record SequenceSerializerOptions(
     static SequenceSerializerOptions? _empty;
 
     /// <summary>
-    /// empty option
+    /// invalid emtpy option (default value)
     /// </summary>
-    public static ISequenceSerializerOptions Empty
+    internal static SequenceSerializerOptions Default
     {
         get
         {

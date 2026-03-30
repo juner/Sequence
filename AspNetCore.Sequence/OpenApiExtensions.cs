@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 
 #pragma warning disable IDE0130 // Namespace がフォルダー構造と一致しません
 namespace Microsoft.Extensions.DependencyInjection;
+#pragma warning restore IDE0130 // Namespace がフォルダー構造と一致しません
 
 public static class OpenApiExtensions
 {
@@ -72,6 +73,7 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
         {
             var contentType = contentType_.ContentType;
             var isStreaming = contentType_.IsStreaming;
+            var notStreamingType = contentType_.NoStreamingType;
             if (string.IsNullOrEmpty(contentType)) continue;
             if (!content.TryGetValue(contentType, out var mediaType))
                 continue;
@@ -82,9 +84,9 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
                 var extensions = mediaType.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 extensions.TryAdd("x-streaming", new JsonNodeExtension(JsonValue.Create(true)));
                 extensions.TryAdd("x-itemSchema", new JsonNodeExtension(typeNode.DeepClone()));
-            } else
+            } else if (notStreamingType is not null)
             {
-                mediaType.Schema = await context.GetOrCreateSchemaAsync(typeof(IAsyncEnumerable<>).MakeGenericType(sequenceMetadata.ItemType), cancellationToken: cancellationToken);
+                mediaType.Schema = await context.GetOrCreateSchemaAsync(notStreamingType, cancellationToken: cancellationToken);
             }
         }
         return requestBody;
@@ -127,6 +129,7 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
             {
                 var contentType = contentType_.ContentType;
                 var isStreaming = contentType_.IsStreaming;
+                var noStreamingType = contentType_.NoStreamingType;
                 if (!(response.Content ??= new Dictionary<string, OpenApiMediaType>()).TryGetValue(contentType, out var schema_))
                     continue;
 
@@ -138,9 +141,9 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
                     extensions.TryAdd("x-streaming", new JsonNodeExtension(JsonValue.Create(true)));
                     extensions.TryAdd("x-itemSchema", new JsonNodeExtension(itemSchemaJsonNode.DeepClone()));
                 }
-                else
+                else if (noStreamingType is not null)
                 {
-                    schema_.Schema = await context.GetOrCreateSchemaAsync(typeof(IAsyncEnumerable<>).MakeGenericType(metadata.ItemType), cancellationToken: cancellationToken);
+                    schema_.Schema = await context.GetOrCreateSchemaAsync(noStreamingType, cancellationToken: cancellationToken);
                 }
             }
         }

@@ -9,7 +9,7 @@ public sealed partial class Sequence<T> : IEndpointParameterMetadataProvider
     public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
      => builder.Metadata.Add(new AcceptsSequenceMetadata(
             itemType: typeof(T),
-            contentTypes: [.. MakePatternActionList.Select(v => new Content(v.ContentType, v.IsStreaming))],
+            contentTypes: [.. MakePatternActionList.Select(v => new Content(v.ContentType, v.IsStreaming, v.IsStreaming ? null : typeof(IAsyncEnumerable<T>)))],
             isOptional: false
         ));
 }

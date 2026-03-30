@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Reflection;
 using System.Threading.Channels;
 
@@ -58,4 +61,6 @@ public sealed class JsonLineResult<T> : SequenceResultBase<T>, IEndpointMetadata
             typeof(T),
             [new Content(CONTENT_TYPE, true)]));
     }
+
+    protected override ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<JsonLineResult<T>>>() ?? (ILogger)NullLogger.Instance;
 }

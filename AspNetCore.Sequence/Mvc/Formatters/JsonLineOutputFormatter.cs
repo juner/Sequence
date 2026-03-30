@@ -9,6 +9,8 @@ using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
 using Juner.Sequence;
+using System.Diagnostics.CodeAnalysis;
+
 
 
 #if NET8_0_OR_GREATER
@@ -22,6 +24,8 @@ namespace Juner.AspNetCore.Sequence.Mvc.Formatters;
 /// <summary>
 /// application/jsonl 対応の フォーマッター
 /// </summary>
+[RequiresDynamicCode("Uses dynamic generic delegate generation")]
+[RequiresUnreferencedCode("Uses reflection to create generic methods")]
 public partial class JsonLineOutputFormatter : TextOutputFormatter
 {
     /// <summary>
@@ -37,7 +41,7 @@ public partial class JsonLineOutputFormatter : TextOutputFormatter
     const string ContentType =
         "application/jsonl";
 
-    /// <inheritdoc />
+    /// <inheritdoc />    
     protected override bool CanWriteType(Type? type)
       => InternalFormatWriter.TryGetOutputMode(type, out _, out _);
 

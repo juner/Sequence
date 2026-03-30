@@ -1,65 +1,17 @@
 # Juner.AspNetCore.Sequence
 
-> [!CAUTION]
-> This package is currently in preview.
-> APIs may change in future releases.
+Streaming support for record‑oriented JSON formats (NDJSON, JSON Lines, JSON Sequence) in ASP.NET Core MVC and Minimal API.
 
-Streaming JSON formats (NDJSON, JSON Lines, JSON Sequence) for ASP.NET Core.
+This package integrates **Juner.Sequence** with ASP.NET Core, providing:
 
-`Juner.AspNetCore.Sequence` is an ASP.NET Core formatter that provides
-**streaming JSON support** for:
+- Streaming **input** via `SequenceInputFormatter` and `Sequence<T>`
+- Streaming **output** via `JsonSequenceResult`, `JsonLineResult`, `NdJsonResult`, and `SequenceResult`
+- Natural Minimal API integration
+- MVC integration through formatters and metadata
+- OpenAPI (.NET 10+) support for streaming schemas
+- Content negotiation for streaming formats
 
-* NDJSON (`application/x-ndjson`)
-* JSON Lines (`application/jsonl`)
-* JSON Sequence (`application/json-seq`)
-* JSON Array (`application/json`)
-
-It enables **incremental serialization and deserialization** using
-`IAsyncEnumerable<T>`, `IEnumerable<T>`, `ChannelReader<T>`, arrays, or lists.
-
----
-
-## Why this library? (The Gap in ASP.NET Core)
-
-While ASP.NET Core natively supports `IAsyncEnumerable<T>` for `application/json`,
-it is limited to **JSON arrays (`[...]`)**.
-
-For streaming-friendly formats like:
-
-* NDJSON
-* JSON Lines
-* JSON Sequence
-
-you typically need to:
-
-* implement custom `InputFormatter` / `OutputFormatter`
-* manually parse request bodies
-* handle Minimal API binding yourself
-
-**This library fills that gap** by enabling consistent streaming handling across formats.
-
----
-
-## Quick Example (Minimal API)
-
-```csharp
-app.MapPost("/process", async (Sequence<Person> sequence) =>
-{
-    await foreach (var person in sequence)
-    {
-        Console.WriteLine($"Received: {person.Name}");
-    }
-
-    return Results.Ok();
-});
-```
-
-Request (NDJSON):
-
-```jsonl
-{"name":"alice"}
-{"name":"bob"}
-```
+It enables true end‑to‑end streaming pipelines in ASP.NET Core without buffering entire payloads.
 
 ---
 
@@ -71,278 +23,250 @@ dotnet add package Juner.AspNetCore.Sequence
 
 ---
 
-## Setup
+# Quick Start
 
-### Minimal API
-
-```csharp
-builder.Services.AddSequenceOpenApi();
-```
-
-### ASP.NET Core (MVC)
+## Minimal API — Streaming JSON Output
 
 ```csharp
-builder.Services.AddSequenceOpenApi();
-builder.Services.AddControllers()
-    .AddSequenceFormatter();
-``
+app.MapGet("/events", () =>
+    TypedResults.JsonSequence(GetEvents()));
 
----
-
-## Features
-
-* Supports multiple streaming formats
-
-  * NDJSON
-  * JSON Lines
-  * JSON Sequence
-  * JSON Array
-* Supports multiple sequence sources
-
-  * `IAsyncEnumerable<T>`
-  * `IEnumerable<T>`
-  * `T[]`
-  * `List<T>`
-  * `ChannelReader<T>`
-* Minimal API ready (`Sequence<T>` binding)
-* Results extensions (`Results.*`, `TypedResults.*`)
-* Incremental JSON parsing
-* Built on `System.Text.Json` and `PipeReader`
-* Low memory usage (streaming, non-buffered)
-
----
-
-## Usage
-
-### Minimal API
-
-```csharp
-app.MapPost("/ndjson",
-    async (Sequence<Person> sequence) =>
-    {
-        await foreach (var item in sequence)
-        {
-            Console.WriteLine(item.Name);
-        }
-
-        return Results.Ok();
-    });
-```
-
-### MVC Controller
-
-```csharp
-[HttpPost]
-[Consumes("application/x-ndjson")]
-public async Task<IActionResult> Post([FromBody] IAsyncEnumerable<Person> data)
+static async IAsyncEnumerable<Event> GetEvents()
 {
-    await foreach (var item in data)
+    while (true)
     {
-        Console.WriteLine(item.Name);
+        yield return new Event { Message = "tick", Time = DateTime.UtcNow };
+        await Task.Delay(1000);
     }
-
-    return Ok();
 }
 ```
 
----
-
-## Results APIs
-
-This library provides multiple ways to return streaming responses.
-
-### SequenceResults (baseline API)
+## Minimal API — Streaming JSON Input
 
 ```csharp
-SequenceResults.NdJson(sequence)
+app.MapPost("/upload", async (Sequence<MyType> items) =>
+{
+    await foreach (var item in items)
+        Console.WriteLine(item);
+});
 ```
 
-Works in all environments without relying on extension methods.
+`Sequence<T>` is an ASP.NET Core–native type that represents a streaming JSON input,  
+allowing items to be consumed as they arrive without buffering.
 
 ---
 
-### Results / TypedResults extensions
+# Supported Streaming Formats
+
+| Format | Content-Type | Notes |
+|--------|--------------|-------|
+| JSON Sequence | `application/json-seq` | RFC 7464 (RS‑delimited) |
+| NDJSON | `application/x-ndjson` | newline‑delimited |
+| JSON Lines | `application/jsonl` | equivalent to NDJSON |
+
+---
+
+# Streaming Output
+
+The following return types are supported for streaming responses:
+
+| Return Type | Streaming? | Notes |
+|-------------|------------|-------|
+| `IAsyncEnumerable<T>` | ✔ | ideal for streaming |
+| `ChannelReader<T>` | ✔ | backpressure‑friendly |
+| `IEnumerable<T>` | △ | buffered |
+| `List<T>` | △ | buffered |
+| `T[]` | △ | buffered |
+| `Sequence<T>` | ✔ | ASP.NET Core–native streaming |
+
+### Minimal API Result Types
 
 ```csharp
-Results.NdJson(sequence)
-TypedResults.NdJson(sequence)
+return TypedResults.JsonSequence(values);
+return TypedResults.JsonLine(values);
+return TypedResults.NdJson(values);
+return TypedResults.Sequence(values); // content negotiation
 ```
 
-Provides a more natural Minimal API experience.
+### MVC OutputFormatter
+
+Streaming is enabled when the client sends:
+
+- `Accept: application/json-seq`
+- `Accept: application/x-ndjson`
+- `Accept: application/jsonl`
 
 ---
 
-### Which should I use?
+# Streaming Input
 
-* Use `SequenceResults` if:
+ASP.NET Core actions can accept the following types as streaming input:
 
-  * you need maximum compatibility
-  * you prefer explicit usage
+| Parameter Type | Streaming? |
+|----------------|------------|
+| `Sequence<T>` | ✔ |
+| `IAsyncEnumerable<T>` | ✔ |
+| `ChannelReader<T>` | ✔ |
+| `IEnumerable<T>` | △ (buffered) |
+| `List<T>` | △ |
+| `T[]` | △ |
 
-* Use `Results` / `TypedResults` if:
-
-  * you are using modern ASP.NET Core
-  * you prefer idiomatic Minimal API style
-
-All APIs produce the same streaming behavior.
-
----
-
-## Supported Formats
-
-| Format        | RFC      | Content-Type         | Notes                            |
-| ------------- | -------- | -------------------- | -------------------------------- |
-| JSON Sequence | RFC 7464 | application/json-seq | record separator based           |
-| NDJSON        | informal | application/x-ndjson | newline delimited                |
-| JSON Lines    | informal | application/jsonl    | similar to NDJSON                |
-| JSON Array    | RFC 8259 | application/json     | buffered or streaming-compatible |
-
----
-
-## Supported Input Types
-
-* `IAsyncEnumerable<T>`
-* `IEnumerable<T>`
-* `T[]`
-* `List<T>`
-* `ChannelReader<T>`
-* `Sequence<T>`
-
----
-
-## Supported Output Types
-
-* `IAsyncEnumerable<T>`
-* `IEnumerable<T>`
-* `T[]`
-* `List<T>`
-* `ChannelReader<T>`
-
----
-
-## Why not just use `[FromBody]`?
+### Minimal API Example
 
 ```csharp
-app.MapPost("/json",
-    async ([FromBody] IAsyncEnumerable<MyObject> items) =>
-    {
-        await foreach (var item in items)
-        {
-            Console.WriteLine(item.Id);
-        }
-    });
+app.MapPost("/items", async (Sequence<Item> items) =>
+{
+    await foreach (var item in items)
+        Console.WriteLine(item);
+});
 ```
 
-This expects a JSON array:
+### MVC InputFormatter
 
-```json
-[
- { "id": 1 },
- { "id": 2 }
-]
-```
+Streaming is enabled for:
 
-It does **not** support streaming formats like NDJSON.
+- `application/json-seq`
+- `application/x-ndjson`
+- `application/jsonl`
 
 ---
 
-### With `Sequence<T>`
+# Content Negotiation
+
+`SequenceResult<T>` automatically selects the best streaming format based on the client's `Accept` header.
+
+| Accept | Output |
+|--------|--------|
+| `application/json-seq` | JSON Sequence |
+| `application/x-ndjson` | NDJSON |
+| `application/jsonl` | JSON Lines |
+| `application/json` | JSON array (non‑streaming) |
 
 ```csharp
-app.MapPost("/ndjson",
-    async (Sequence<MyObject> sequence) =>
-    {
-        await foreach (var item in sequence)
-        {
-            Console.WriteLine(item.Id);
-        }
-    });
-```
-
-Request:
-
-```text
-{"id":1}
-{"id":2}
-{"id":3}
+return TypedResults.Sequence(values);
 ```
 
 ---
 
-## Comparison
+# JSON Array (`application/json`)
 
-| Feature | Standard ASP.NET Core | With This Library |
-| ------- | --------------------- | ----------------- |
-| JSON Array | ✅ | ✅ |
-| NDJSON / JSONL | ❌ | ✅ |
-| JSON Sequence | ❌ | ✅ |
-| Minimal API binding | ⚠️ JSON only | ✅ |
-| Request streaming (NDJSON etc.) | ❌ | ✅ |
-| Streaming output | ⚠️ limited | ✅ |
+JSON arrays are not true streaming formats, as they require full buffering.
 
----
+`SequenceResult<T>` can return JSON arrays, but they are fully buffered.
 
-## OpenAPI support
+For true streaming, use:
 
-> [!CAUTION]
-> `AddSequenceOpenApi()` is currently available only for .NET 10
-
-OpenAPI (Swagger) does not fully support streaming formats such as:
-
-* NDJSON
-* JSON Lines
-* JSON Sequence
-
-To avoid misleading schemas, response type information may be omitted.
-
-Please refer to the examples for actual usage.
-
-Support may improve with future OpenAPI versions (e.g. 3.2).
+- `JsonSequenceResult<T>`
+- `JsonLineResult<T>`
+- `NdJsonResult<T>`
 
 ---
 
-## Internals
+# OpenAPI Integration (.NET 10+)
 
-The formatter integrates with ASP.NET Core's formatter pipeline.
+Enable OpenAPI support:
 
-Supported formats can be bound to multiple types, including:
+```csharp
+services.AddSequenceOpenApi();
+```
 
-* `IAsyncEnumerable<T>`
-* `ChannelReader<T>`
-* `Sequence<T>`
+Streaming endpoints are annotated with:
 
-`Sequence<T>` is a wrapper that enables unified streaming input handling across formats.
+- `x-streaming: true`
+- `x-itemSchema: { ... }`
+- Correct content types per format
 
-The implementation is based on:
-
-* `System.Text.Json`
-* `PipeReader`
-
-Serialization and deserialization are performed incrementally.
+Both request and response schemas are generated accurately.
 
 ---
 
-## Target Framework
+# Architecture
 
-* .NET 7
-* .NET 8
-* .NET 9
-* .NET 10
-* ASP.NET Core
+```mermaid
+graph TD;
+    A[Juner.Sequence<br/>Core]
+    B[Juner.Http.Sequence]
+    C[Juner.AspNetCore.Sequence]
+
+    A --> B
+    B --> C
+
+    C --> D[InputFormatter<br/>SequenceInputFormatter]
+    C --> E[OutputFormatter<br/>JsonSequence / JsonLine / NdJson]
+    C --> F[Result Types<br/>JsonSequenceResult / JsonLineResult / NdJsonResult / SequenceResult]
+    C --> G[Sequence<T><br/>Minimal API Integration]
+    C --> H[OpenAPI (.NET 10+)]
+```
 
 ---
 
-## License
+# AOT Considerations
 
-[MIT](./LICENSE)
+ASP.NET Core MVC formatters rely on:
 
-## See also
+- dynamic code generation  
+- reflection  
+- `JsonSerializerOptions` and `TypeInfoResolver`  
 
-* RFC 7464 - JavaScript Object Notation (JSON) Text Sequences \
-[https://datatracker.ietf.org/doc/html/rfc7464](https://datatracker.ietf.org/doc/html/rfc7464)
-* JSON Lines \
-[https://jsonlines.org](https://jsonlines.org)
-* JSON streaming - Wikipedia (en) \
-[https://en.wikipedia.org/wiki/JSON_streaming](https://en.wikipedia.org/wiki/JSON_streaming)
-* npm:json-seq-stream
-[https://www.npmjs.com/package/json-seq-stream](https://www.npmjs.com/package/json-seq-stream/v/1.0.10)
+Because of these framework‑level constraints,  
+**MVC streaming (InputFormatter / OutputFormatter) is not AOT‑safe**.
+
+However:
+
+### ✔ Minimal API is AOT‑friendly
+
+When using only:
+
+- `Sequence<T>` (for streaming input)  
+- `JsonSequenceResult<T>`, `JsonLineResult<T>`, `NdJsonResult<T>`, `SequenceResult<T>` (for streaming output)
+
+no MVC formatters are involved, and  
+**Minimal API streaming works under Native AOT**.
+
+### Summary
+
+| Feature | AOT‑safe? | Notes |
+|--------|-----------|-------|
+| Minimal API streaming | ✔ | Uses `Sequence<T>` and result types only |
+| MVC streaming | ✘ | Requires formatters (dynamic code) |
+| OpenAPI (.NET 10+) | ✔ | Works in both modes |
+| JSON array fallback | ✔ | Uses built‑in JSON serialization |
+
+---
+
+# Samples
+
+This repository includes two complete samples:
+
+- **Minimal API JSON Sequence Streaming Sample**  
+- **MVC JSON Sequence Streaming Sample**
+
+Both demonstrate:
+
+- Streaming output (`JsonSequenceResult`)
+- Streaming input (`Sequence<T>`)
+- Bidirectional streaming using `fetch()` with `duplex: 'half'`
+- Browser‑side JSON Sequence parsing (`json-seq-stream`)
+- OpenAPI (.NET 10+) integration
+
+### Minimal API Sample
+
+Located at:
+
+```
+../samples/AspNetCore.Sequence/MinimalApiJsonSequenceStreamingSample.cs
+```
+
+### MVC Sample
+
+Located at:
+
+```
+../samples/AspNetCore.Sequence/MvcJsonSequenceStreamingSample.cs
+```
+
+---
+
+# License
+
+MIT

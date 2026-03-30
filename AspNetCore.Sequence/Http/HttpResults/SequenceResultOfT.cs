@@ -113,7 +113,7 @@ public partial class SequenceResult<T> : IStatusCodeHttpResult, ISequenceHttpRes
         builder.Metadata.Add(new ProducesSequenceResponseTypeMetadata(
             STATUS_CODE,
             typeof(T),
-            [.. MakePatternList.Select(v => new Content(v.ContentType, v.IsStreaming))]));
+            [.. MakePatternList.Select(v => new Content(v.ContentType, v.IsStreaming, v.IsStreaming ? null : typeof(IAsyncEnumerable<T>)))]));
     }
 
     record MakePattern(string ContentType, ISequenceSerializerWriteOptions Options, bool IsStreaming);
@@ -189,7 +189,7 @@ public partial class SequenceResult<T> : IStatusCodeHttpResult, ISequenceHttpRes
         {
             const string contentType =
                 "application/json";
-            yield return new(contentType, SequenceSerializerOptions.Empty, false);
+            yield return new(contentType, SequenceSerializerOptions.Default, false);
         }
 
     }

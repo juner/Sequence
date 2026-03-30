@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
 using System.Diagnostics;
 using Juner.Sequence;
@@ -19,13 +18,7 @@ namespace Juner.AspNetCore.Sequence.Http.HttpResults;
 [DebuggerDisplay("{Values,nq}")]
 public abstract partial class SequenceResultBase<T> : IResult
 {
-    ILogger GetLogger(IServiceProvider provider)
-    {
-        var loggerType = typeof(ILogger<>).MakeGenericType(GetType());
-        var logger = provider.GetService(loggerType) as ILogger;
-        if (logger is not null) return logger;
-        return NullLogger.Instance;
-    }
+    protected abstract ILogger GetLogger(IServiceProvider provider);
     static JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
     {
         var jsonOptions = provider.GetService<IOptions<JsonOptions>>()?.Value;

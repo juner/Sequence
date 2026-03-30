@@ -1,14 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <IsAotCompatible>true</IsAotCompatible>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <Description>High-performance streaming JSON sequence serialization for .NET.
-Supports NDJSON, JSON Lines, JSON Sequence, and JSON array formats using IAsyncEnumerable.
-AOT-friendly and System.Text.Json-based.</Description>
-    <PackageTags>json;streaming;ndjson;jsonlines;json-seq;iasyncenumerable;system-text-json;aot;serialization</PackageTags>
+    <Description>High-performance streaming JSON serialization for NDJSON, JSON Lines, and JSON Sequence.
+AOT-friendly, zero-allocation, and built on System.Text.Json with IAsyncEnumerable&lt;T&gt; support.</Description>
+    <PackageTags>json;streaming;ndjson;jsonlines;json-seq;iasyncenumerable;system-text-json;aot;serialization;json-sequence</PackageTags>
     <PackageProjectUrl>https://github.com/juner/Sequence</PackageProjectUrl>
     <IsPackable>True</IsPackable>
   </PropertyGroup>
@@ -31,6 +25,8 @@ AOT-friendly and System.Text.Json-based.</Description>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Juner.Sequence.Tests" />
+    <InternalsVisibleTo Include="Juner.AspNetCore.Sequence" />
+    <InternalsVisibleTo Include="Juner.Http.Sequence" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net8.0'">

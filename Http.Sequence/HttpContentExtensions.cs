@@ -13,7 +13,7 @@ public static class HttpContentExtensions
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(options);
-        if (options.IsEmpty) throw new ArgumentException(null, nameof(options));
+        if (options.IsInvalid) throw new ArgumentException(null, nameof(options));
         var stream = content.ReadAsStream(cancellationToken);
         var reader = PipeReader.Create(stream);
 

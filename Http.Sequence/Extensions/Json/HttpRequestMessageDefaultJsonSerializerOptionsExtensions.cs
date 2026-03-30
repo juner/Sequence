@@ -1,14 +1,16 @@
 using Juner.Sequence;
-using System.Text.Json.Serialization.Metadata;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
-namespace Juner.Http.Sequence.Extensions;
+namespace Juner.Http.Sequence.Extensions.Json;
 
 /// <summary>
 /// 
 /// </summary>
-public static class HttpRequestMessageJsonTypeInfoExtensions
+public static class HttpRequestMessageDefaultJsonSerializerOptionsExtensions
 {
-    static string GetErrorMessage<T>(JsonTypeInfo jsonTypeInfo) => $"JsonTypeInfo<{typeof(T).FullName}> expected but got {jsonTypeInfo.GetType()}";
+    const string RequiresUnreferencedCodeMessage = "Uses JsonSerializerOptions.Default which may require reflection.";
+    const string RequiresDynamicCodeMessage = "May not be AOT compatible.";
 
     /// <summary>
     /// 
@@ -16,44 +18,25 @@ public static class HttpRequestMessageJsonTypeInfoExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="request"></param>
     /// <param name="source"></param>
-    /// <param name="jsonTypeInfo"></param>
     /// <param name="options"></param>
     /// <param name="contentType"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    /// <exception cref="InvalidOperationException"></exception>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static HttpRequestMessage WithSequenceContent<T>(
         this HttpRequestMessage request,
         IAsyncEnumerable<T> source,
-        JsonTypeInfo jsonTypeInfo,
         ISequenceSerializerWriteOptions options,
         string contentType,
-        CancellationToken cancellationToken
-    )
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
-#if NET8_0_OR_GREATER
-        ArgumentException.ThrowIfNullOrWhiteSpace(contentType);
-#else
-        ArgumentNullException.ThrowIfNullOrEmpty(contentType);
-#endif
-        if (options.IsInvalid)
-            throw new ArgumentException("Options must not be empty.", nameof(options));
-        if (jsonTypeInfo is not JsonTypeInfo<T> jsonTypeInfo2)
-            throw new InvalidOperationException(GetErrorMessage<T>(jsonTypeInfo));
-        return HttpRequestMessageExtensions.WithSequenceContent<T>(
+        CancellationToken cancellationToken = default)
+        => HttpRequestMessageJsonSerializerOptionsExtensions.WithSequenceContent(
             request,
             source,
-            jsonTypeInfo2,
+            JsonSerializerOptions.Default,
             options,
             contentType,
-            cancellationToken
-        );
-    }
+            cancellationToken);
 
     /// <summary>
     /// 
@@ -61,22 +44,20 @@ public static class HttpRequestMessageJsonTypeInfoExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="request"></param>
     /// <param name="source"></param>
-    /// <param name="jsonTypeInfo"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static HttpRequestMessage WithJsonSequenceContent<T>(
         this HttpRequestMessage request,
         IAsyncEnumerable<T> source,
-        JsonTypeInfo jsonTypeInfo,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     ) => WithSequenceContent(
         request,
         source,
-        jsonTypeInfo,
         SequenceSerializerOptions.JsonSequence,
         "application/json-seq",
-        cancellationToken
-    );
+        cancellationToken);
 
     /// <summary>
     /// 
@@ -84,22 +65,20 @@ public static class HttpRequestMessageJsonTypeInfoExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="request"></param>
     /// <param name="source"></param>
-    /// <param name="jsonTypeInfo"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static HttpRequestMessage WithJsonLinesContent<T>(
         this HttpRequestMessage request,
         IAsyncEnumerable<T> source,
-        JsonTypeInfo jsonTypeInfo,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     ) => WithSequenceContent(
         request,
         source,
-        jsonTypeInfo,
         SequenceSerializerOptions.JsonLines,
         "application/jsonl",
-        cancellationToken
-    );
+        cancellationToken);
 
     /// <summary>
     /// 
@@ -107,20 +86,18 @@ public static class HttpRequestMessageJsonTypeInfoExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="request"></param>
     /// <param name="source"></param>
-    /// <param name="jsonTypeInfo"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static HttpRequestMessage WithNdJsonContent<T>(
         this HttpRequestMessage request,
         IAsyncEnumerable<T> source,
-        JsonTypeInfo jsonTypeInfo,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken = default
     ) => WithSequenceContent(
         request,
         source,
-        jsonTypeInfo,
         SequenceSerializerOptions.JsonLines,
         "application/x-ndjson",
-        cancellationToken
-    );
+        cancellationToken);
 }

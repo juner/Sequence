@@ -4,6 +4,9 @@ public static class SequenceSerializerWriteOptionsExtensions
 {
     extension(ISequenceSerializerWriteOptions options)
     {
-        public bool IsEmpty => options is not ({ Start.IsEmpty: false } or { End.IsEmpty: false });
+        /// <summary>
+        ///  sequence write options is Invalid
+        /// </summary>
+        public bool IsInvalid => options is not ({ Start.IsEmpty: false } or { End.IsEmpty: false });
     }
 }

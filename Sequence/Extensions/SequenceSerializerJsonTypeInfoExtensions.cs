@@ -17,11 +17,11 @@ public static class SequenceSerializerJsonTypeInfoExtensions
              _ => throw new InvalidOperationException(),
          };
 
-         public static IAsyncEnumerable<T> DeserializeAsyncEnumerable<T>(PipeReader reader, JsonTypeInfo jsonTypeInfo, ISequenceSerializerReadOptions options, CancellationToken cancellationToken = default)
-          => jsonTypeInfo switch
-          {
-              JsonTypeInfo<T> jsonTypeInfo2 => SequenceSerializer.DeserializeAsyncEnumerable(reader, jsonTypeInfo2, options, cancellationToken),
+        public static IAsyncEnumerable<T> DeserializeAsyncEnumerable<T>(PipeReader reader, JsonTypeInfo jsonTypeInfo, ISequenceSerializerReadOptions options, CancellationToken cancellationToken = default)
+         => jsonTypeInfo switch
+         {
+             JsonTypeInfo<T> jsonTypeInfo2 => SequenceSerializer.DeserializeAsyncEnumerable(reader, jsonTypeInfo2, options, cancellationToken),
              _ => throw new InvalidOperationException(),
-          };
+         };
     }
 }

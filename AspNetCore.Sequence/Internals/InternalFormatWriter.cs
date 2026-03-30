@@ -11,10 +11,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Channels;
 
-#if NET9_0_OR_GREATER
-using System.IO.Pipelines;
-#endif
-
 namespace Juner.AspNetCore.Sequence.Internals;
 
 internal static class InternalFormatWriter
@@ -27,6 +23,8 @@ internal static class InternalFormatWriter
         {typeof(ChannelReader<>), EnumerableType.ChannelReader },
         {typeof(Http.Sequence<>), EnumerableType.Sequence },
     }.AsReadOnly();
+
+    [RequiresUnreferencedCode("Uses reflection to search interfaces")]
     public static bool TryGetOutputMode([NotNullWhen(true)] Type? objectType, [NotNullWhen(true)] out EnumerableType outputType, [NotNullWhen(true)] out Type type)
     {
         outputType = default;
@@ -54,6 +52,9 @@ internal static class InternalFormatWriter
     }
 
     static JsonTypeInfo GetJsonTypeInfo(JsonSerializerOptions serializerOptions, Type type) => serializerOptions.GetTypeInfo(type);
+
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     public static Task WriteResponseBodyAsync(
         Type? objectType,
         object? @object,
@@ -75,6 +76,7 @@ internal static class InternalFormatWriter
             cancellationToken);
     }
 
+    [RequiresUnreferencedCode("Uses reflection to search interfaces")]
     public static Task WriteAsync<Enumerable, T>(
         Enumerable? @object,
         HttpContext httpContext,
@@ -117,6 +119,8 @@ internal static class InternalFormatWriter
 
     static readonly ConcurrentDictionary<Type, Delegate> cache = new();
 
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     static Task WriteAsync(
         Type objectType,
         object? @object,
@@ -147,6 +151,8 @@ internal static class InternalFormatWriter
             cancellationToken);
     }
 
+    [RequiresDynamicCode("Uses dynamic generic delegate generation")]
+    [RequiresUnreferencedCode("Uses reflection to create generic methods")]
     static Delegate CreateDelegate(Type objectType)
     {
         if (!TryGetOutputMode(objectType, out _, out var type))

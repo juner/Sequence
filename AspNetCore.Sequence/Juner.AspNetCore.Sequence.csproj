@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <Description>Streaming JSON sequence support for ASP.NET Core.
-Supports NDJSON, JSON Lines, JSON Sequence, and JSON arrays using IAsyncEnumerable.</Description>
+    <Description>Streaming JSON support for ASP.NET Core (NDJSON, JSON Lines, JSON Sequence).
+Also supports JSON arrays as non-streaming input/output for convenience.
+Provides Minimal API and MVC integration with content negotiation and OpenAPI support.</Description>
     <PackageTags>aspnetcore;streaming;json;ndjson;jsonlines;json-seq;iasyncenumerable</PackageTags>
     <PackageProjectUrl>https://github.com/juner/Sequence</PackageProjectUrl>
     <IsPackable>True</IsPackable>

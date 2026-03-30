@@ -6,10 +6,10 @@ class TrackingStream : MemoryStream
     public TrackingStream() : base() => stream = new();
     public TrackingStream(byte[] buffer) : base() => stream = new(buffer);
     public TrackingStream(int capacity) : base() => stream = new(capacity);
-    public TrackingStream(byte[] buffer, bool writable): base() => stream = new(buffer, writable);
-    public TrackingStream(byte[] buffer, int index, int count): base() => stream = new(buffer, index, count);
-    public TrackingStream(byte[] buffer, int index, int count, bool writable): base() => stream = new(buffer, index, count, writable);
-    public TrackingStream(byte[] buffer, int index, int count, bool writable, bool publiclyVisible): base() => stream = new(buffer, index, count, writable, publiclyVisible);
+    public TrackingStream(byte[] buffer, bool writable) : base() => stream = new(buffer, writable);
+    public TrackingStream(byte[] buffer, int index, int count) : base() => stream = new(buffer, index, count);
+    public TrackingStream(byte[] buffer, int index, int count, bool writable) : base() => stream = new(buffer, index, count, writable);
+    public TrackingStream(byte[] buffer, int index, int count, bool writable, bool publiclyVisible) : base() => stream = new(buffer, index, count, writable, publiclyVisible);
     public override bool CanRead => stream.CanRead;
     public override bool CanSeek => stream.CanSeek;
     public override bool CanTimeout => stream.CanTimeout;
