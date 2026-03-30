@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 
 namespace Juner.Sequence.Extensions.Json;
 

@@ -34,7 +34,7 @@ public static class HttpContentJsonSerializerOptionsExtensions
         ArgumentNullException.ThrowIfNull(content);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(jsonSerializerOptions);
-        if (options.IsEmpty)
+        if (options.IsInvalid)
             throw new ArgumentException("Options must not be empty.", nameof(options));
 #if !NET8_0_OR_GREATER
         jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();

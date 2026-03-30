@@ -42,7 +42,7 @@ public static class HttpRequestMessageJsonSerializerOptionsExtensions
         ArgumentNullException.ThrowIfNullOrEmpty(contentType);
 #endif
         ArgumentNullException.ThrowIfNull(jsonSerializerOptions);
-        if (options.IsEmpty)
+        if (options.IsInvalid)
             throw new ArgumentException("Options must not be empty.", nameof(options));
 #if !NET8_0_OR_GREATER
         jsonSerializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();

@@ -189,7 +189,7 @@ public partial class SequenceResult<T> : IStatusCodeHttpResult, ISequenceHttpRes
         {
             const string contentType =
                 "application/json";
-            yield return new(contentType, SequenceSerializerOptions.Empty, false);
+            yield return new(contentType, SequenceSerializerOptions.Default, false);
         }
 
     }

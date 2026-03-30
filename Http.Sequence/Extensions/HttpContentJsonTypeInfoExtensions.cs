@@ -19,7 +19,7 @@ public static class HttpContentJsonTypeInfoExtensions
         ArgumentNullException.ThrowIfNull(content);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(jsonTypeInfo);
-        if (options.IsEmpty)
+        if (options.IsInvalid)
             throw new ArgumentException("Options must not be empty.", nameof(options));
         if (jsonTypeInfo is not JsonTypeInfo<T> jsonTypeInfo2)
             throw new InvalidOperationException(GetErrorMessage<T>(jsonTypeInfo));

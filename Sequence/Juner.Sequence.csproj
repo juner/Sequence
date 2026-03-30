@@ -26,6 +26,8 @@ AOT-friendly and System.Text.Json-based.</Description>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Juner.Sequence.Tests" />
+    <InternalsVisibleTo Include="Juner.AspNetCore.Sequence" />
+    <InternalsVisibleTo Include="Juner.Http.Sequence" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net8.0'">

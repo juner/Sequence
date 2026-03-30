@@ -80,7 +80,7 @@ public class SequenceSerializer_SerializeTests
             stream,
             Data(),
             TypeInfo,
-            SequenceSerializerOptions.Empty,
+            SequenceSerializerOptions.Default,
             CancellationToken);
 
         var result = Encoding.UTF8.GetString(stream.ToArray());

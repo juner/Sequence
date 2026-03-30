@@ -52,7 +52,7 @@ public partial class SequenceResult<T> : IResult
 #endif
         var values = ToAsyncEnumerable(httpContext.RequestAborted);
 
-        if (options.IsEmpty)
+        if (options.IsInvalid)
         {
             var jsonTypeInfo = serializerOptions.GetTypeInfo<IAsyncEnumerable<T>>();
 
