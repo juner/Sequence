@@ -15,7 +15,7 @@ providing end‑to‑end streaming support for formats such as:
 - **JSON Text Sequences** (RFC 7464, `application/json-seq`)
 
 These formats represent a sequence of independent JSON values,
-allowing clients to process data incrementally without buffering the entire payload.
+allowing **incremental processing** without loading the entire payload.
 
 ---
 
@@ -259,8 +259,9 @@ graph TD;
     B --> C[HttpContent Extensions]
     B --> D[HttpRequestMessage Extensions]
 
-    B --> E[AOT-safe APIs]
-    B --> F[Non AOT-safe APIs]
+    B --> E[JsonSerializerOptions Extensions<br/>(not AOT‑safe)]
+    B --> F[JsonSerializerOptions.Default Extensions<br/>(explicitly not AOT‑safe)]
+    B --> G[JsonTypeInfo (non‑generic)<br/>Advanced]
 ```
 
 ---
