@@ -7,17 +7,22 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/samples/" />
-  <Folder Name="/samples/AspNetCore.Sequence/">
+  <Folder Name="/benchmarks/">
+    <File Path="benchmarks/BENCHMARKS.md" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Sequence.Benchmark/Juner.Sequence.Benchmark.csproj" />
+  </Folder>
+  <Folder Name="/samples/Juner.AspNetCore.Sequence/">
     <File Path="samples/AspNetCore.Sequence/appsettings.Development.json" />
     <File Path="samples/AspNetCore.Sequence/appsettings.json" />
     <File Path="samples/AspNetCore.Sequence/MinimalApiJsonSequenceStreamingSample.cs" />
     <File Path="samples/AspNetCore.Sequence/MvcJsonSequenceStreamingSample.cs" />
   </Folder>
-  <Folder Name="/samples/AspNetCore.Sequence/Properties/">
+  <Folder Name="/samples/Juner.AspNetCore.Sequence/Properties/">
     <File Path="samples/AspNetCore.Sequence/Properties/launchSettings.json" />
   </Folder>
-  <Folder Name="/samples/Sequence/">
+  <Folder Name="/samples/Juner.Sequence/">
     <File Path="samples/Sequence/BenchMark.cs" />
   </Folder>
   <Project Path="AspNetCore.Sequence.Tests/Juner.AspNetCore.Sequence.Tests.csproj" />

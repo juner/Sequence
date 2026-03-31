@@ -1,8 +1,8 @@
 # Juner.Sequence
 
-High​‑performance, AOT-friendly streaming serializer for record-oriented JSON formats in .NET.
+High‑performance, AOT‑friendly streaming serializer for record‑oriented JSON formats in .NET.
 
-Record-oriented formats represent a sequence of independent JSON values,
+Record‑oriented formats represent a sequence of independent JSON values,
 rather than a single JSON array.
 
 `Juner.Sequence` provides zero‑allocation, fully streaming serialization and deserialization for **record‑oriented JSON formats**, including:
@@ -37,12 +37,9 @@ dotnet add package Juner.Sequence
 public partial class MyJsonContext : JsonSerializerContext { }
 ```
 
----
-
 ### Serialize (NDJSON / JSON Lines)
 
 ```csharp
-// Serialize 
 await SequenceSerializer.SerializeAsync(
     writer,
     source,
@@ -87,38 +84,34 @@ instead of `JsonSerializerOptions`.
 ## Runtime Behavior
 
 ### .NET 9 or later
-`SequenceSerializer` writes directly to `PipeWriter` using `JsonSerializer.SerializeAsync`, providing the fastest possible path.
+Uses the optimized **PipeWriter‑based fast path**, avoiding intermediate buffering and providing the highest throughput.
 
 ### .NET 8 or earlier
-Serialization falls back to a stream‑based implementation:
+Falls back to a **Stream‑based implementation** via:
 
 ```csharp
 writer.AsStream()
 ```
 
-This ensures compatibility, though it may introduce additional allocations
-compared to the PipeWriter-based fast path.
+This ensures compatibility, though it may introduce additional allocations compared to the PipeWriter fast path.
 
 ---
 
 ## SequenceSerializerOptions
 
-`SequenceSerializerOptions` defines how records are framed during serialization and deserialization.
+Defines how records are framed during serialization and deserialization.
 
 ### Built‑in presets
 
 | Name | Description |
 |------|-------------|
 | `JsonSequence` | RFC 7464 (`RS` + JSON + `LF`) |
-| `JsonLines` | NDJSON / JSON Lines ( JSON + `LF`) |
+| `JsonLines` | NDJSON / JSON Lines (JSON + `LF`) |
 
 ### Invalid Options
 
 A valid sequence format must define at least one start or end delimiter.  
 Options that define **no framing** are considered **invalid** and are not supported.
-
-The library contains an internal default value used only for initialization,  
-but it is not available for public use.
 
 ---
 
@@ -133,9 +126,6 @@ Controls how flushing is performed during serialization.
 
 `PerRecord` improves real‑time behavior but reduces throughput.
 
-`PerRecord` is useful for real-time streaming scenarios (e.g. logs, HTTP streaming),
-while `None` maximizes throughput in batch processing.
-
 ---
 
 ## Framing Engine (Core Feature)
@@ -143,27 +133,155 @@ while `None` maximizes throughput in batch processing.
 The deserializer uses optimized fast‑paths for common formats:
 
 - **NDJSON / JSON Lines**  
-  (`Start = empty`, `End = 1 byte`)
+- **JSON Sequence (RFC 7464)**  
 
-- **JSON Sequence**  
-  (`Start = 1 byte`, `End = 1 byte`)
-
-For custom formats, it falls back to a general delimiter‑matching engine that supports:
+For custom formats, it falls back to a general delimiter‑matching engine supporting:
 
 - Multiple start delimiters  
 - Multiple end delimiters  
 - Variable‑length delimiters  
 - Longest‑match semantics  
 
-The final frame is handled separately, with optional support for ignoring incomplete frames.
+---
+
+# Performance
+
+Juner.Sequence provides predictable, memory‑efficient streaming for NDJSON,  
+JSON Lines, and JSON Text Sequences.
+
+To help users understand real‑world performance, we benchmarked the library on:
+
+- **Desktop CPU**: Intel Core i5‑9400 (Coffee Lake, 6C/6T, 65W)  
+- **Laptop CPU**: Surface Book 3 — Intel Core i7‑1065G7 (Ice Lake, 4C/8T, 15W)
+
+These represent common environments for .NET developers and production workloads  
+(servers, laptops, CI runners, cloud VMs, containers).
+
+Benchmarks were executed using BenchmarkDotNet with 100,000 items of `MyType`.
 
 ---
 
-## Optional Extensions
+## Summary (Serialize — NDJSON vs JSON Array)
 
-### JsonTypeInfo (non‑generic) Extensions — *advanced use only*
+### NDJSON Serialize (Streaming)
 
-These extensions allow passing a non‑generic `JsonTypeInfo`:
+| Runtime | Desktop (i5‑9400) | Laptop (Surface Book 3) |
+|--------|-------------------:|-------------------------:|
+| .NET 10 | 50.7 ms | 102.3 ms |
+| .NET 9  | 58.7 ms | 79.6 ms |
+| .NET 8  | 59.0 ms | 66.0 ms |
+| .NET 7  | 70.0 ms | 90.1 ms |
+
+**Observations**
+
+- NDJSON streaming is CPU‑bound and scales with core performance  
+- Low‑TDP CPUs (laptops, cloud VMs) show ~2× slower throughput  
+- Still provides stable, record‑by‑record output with constant memory usage
+
+---
+
+### JSON Array Serialize (System.Text.Json)
+
+| Runtime | Desktop | Laptop |
+|--------|--------:|-------:|
+| .NET 10 | 11.1 ms | 13.2 ms |
+| .NET 9  | 15.0 ms | 15.0 ms |
+| .NET 8  | 16.0 ms | 16.5 ms |
+| .NET 7  | 18.0 ms | 18.8 ms |
+
+**Observations**
+
+- JSON arrays are fastest due to contiguous buffered writes  
+- Performance is similar across CPUs because the work is burst‑heavy  
+- Requires full buffering of the entire dataset (not streaming)
+
+---
+
+## Summary (Deserialize — NDJSON vs JSON Array)
+
+### NDJSON Deserialize (Streaming)
+
+| Runtime | Desktop (i5‑9400) | Laptop (Surface Book 3) |
+|--------|-------------------:|-------------------------:|
+| .NET 10 | 99.9 ms | 197.3 ms |
+| .NET 9  | 102.0 ms | 150.5 ms |
+| .NET 8  | 110.0 ms | 139.1 ms |
+| .NET 7  | 120.0 ms | 155.3 ms |
+
+**Observations**
+
+- NDJSON parsing is Utf8JsonReader‑heavy and CPU‑bound  
+- Laptop CPUs show ~1.5–2× slower performance  
+- Memory usage remains constant regardless of dataset size
+
+---
+
+### JSON Array Deserialize (System.Text.Json)
+
+| Runtime | Desktop | Laptop |
+|--------|--------:|-------:|
+| .NET 10 | 48.8 ms | 64.1 ms |
+| .NET 9  | 59.7 ms | 59.7 ms |
+| .NET 8  | 60.3 ms | 60.3 ms |
+| .NET 7  | 70.5 ms | 70.5 ms |
+
+**Observations**
+
+- JSON array deserialization is fast but requires full buffering  
+- Performance is more stable across CPUs  
+- Not suitable for unbounded or streaming scenarios
+
+---
+
+## System.Text.Json — Async Streaming (JSON Array Only)
+
+`DeserializeAsyncEnumerable<T>()` provides record‑by‑record streaming  
+**but only for JSON arrays**.
+
+| Runtime | Desktop | Laptop |
+|--------|--------:|-------:|
+| .NET 10 | 37.5 ms | 38.4 ms |
+| .NET 9  | 52.4 ms | 52.4 ms |
+| .NET 8  | 60.6 ms | 60.6 ms |
+| .NET 7  | 67.9 ms | 67.9 ms |
+
+**Observations**
+
+- Very fast, but limited to JSON arrays  
+- Cannot read NDJSON / JSON Lines / JSON Sequence  
+- Still requires the entire array structure to be valid before streaming begins
+
+---
+
+## Key Takeaways
+
+- **JSON arrays are fastest** but require full buffering and high memory usage  
+- **NDJSON streaming is slower** but provides:
+  - constant memory usage  
+  - record‑by‑record processing  
+  - suitability for unbounded or real‑time data  
+- **Laptop / cloud CPUs amplify the difference**  
+  - NDJSON shows ~2× slower performance on low‑TDP CPUs  
+  - JSON arrays degrade less because they rely on burst throughput  
+- **PipeWriter / PipeReader optimizations help on .NET 9+**  
+  but may not benefit low‑TDP CPUs
+
+---
+
+## Full Benchmark Output
+
+The complete BenchmarkDotNet output (all runtimes, all methods)  
+is available in:
+
+```
+/benchmarks/BENCHMARKS.md
+```
+
+---
+
+## Optional Extensions (Advanced)
+
+### JsonTypeInfo (non‑generic) Extensions
 
 ```csharp
 using Juner.Sequence.Extensions;
@@ -180,9 +298,7 @@ await SequenceSerializer.SerializeAsync(
 
 ---
 
-### JsonSerializerOptions Support — *not guaranteed AOT‑safe*
-
-These extensions resolve metadata via `JsonSerializerOptions.TypeInfoResolver`:
+### JsonSerializerOptions Support (not guaranteed AOT‑safe)
 
 ```csharp
 using Juner.Sequence.Extensions.Json;
@@ -198,9 +314,7 @@ await SequenceSerializer.SerializeAsync(
 
 ---
 
-### JsonSerializerOptions.Default Support — *explicitly not AOT‑safe*
-
-Convenience APIs using `JsonSerializerOptions.Default`:
+### JsonSerializerOptions.Default Support (explicitly not AOT‑safe)
 
 ```csharp
 using Juner.Sequence.Extensions.Json;
@@ -211,7 +325,7 @@ await SequenceSerializer.SerializeAsync(
     SequenceSerializerOptions.JsonLines);
 ```
 
-These APIs are annotated with:
+Annotated with:
 
 - `RequiresUnreferencedCode`
 - `RequiresDynamicCode`
@@ -221,8 +335,6 @@ These APIs are annotated with:
 ---
 
 ### Encoding Support (AOT‑safe)
-
-Supports non‑UTF‑8 encodings via transcoding streams:
 
 ```csharp
 using Juner.Sequence.Extensions;
@@ -240,8 +352,6 @@ UTF‑8 uses the fast path with no overhead.
 ---
 
 ### Stream‑based Extensions (AOT‑safe)
-
-Convenience APIs for working directly with `Stream`:
 
 ```csharp
 using Juner.Sequence.Extensions;
@@ -269,12 +379,12 @@ Internally uses `PipeReader.Create(stream)` for deserialization.
 
 ## About JSON Array (`application/json`)
 
-JSON arrays are already well supported by `JsonSerializer` for stream-based scenarios.
+JSON arrays are already well supported by `JsonSerializer` for stream‑based scenarios.
 
-Juner.Sequence is designed specifically for record-oriented streaming formats,
+Juner.Sequence is designed specifically for **record‑oriented streaming formats**,  
 where each JSON value can be processed independently.
 
-For this reason, JSON arrays are intentionally not supported.
+For this reason, **JSON arrays are intentionally not supported**.
 
 ---
 
