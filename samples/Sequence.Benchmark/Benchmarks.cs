@@ -10,12 +10,12 @@ using BenchmarkDotNet.Jobs;
 using System.IO.Pipelines;
 
 [
-    SimpleJob(RuntimeMoniker.Net10_0, launchCount:50 ), 
-    SimpleJob(RuntimeMoniker.Net90, launchCount:50 ), 
-    SimpleJob(RuntimeMoniker.Net80, launchCount:50), 
-    SimpleJob(RuntimeMoniker.Net70, launchCount:50)
+    SimpleJob(RuntimeMoniker.Net10_0, launchCount: 10),
+    SimpleJob(RuntimeMoniker.Net90, launchCount: 10),
+    SimpleJob(RuntimeMoniker.Net80, launchCount: 10),
+    SimpleJob(RuntimeMoniker.Net70, launchCount: 10)
 ]
-[MemoryDiagnoser, ]
+[MemoryDiagnoser,]
 public class StreamingBenchmarks
 {
     private readonly MyType[] _arrayData;
@@ -228,7 +228,7 @@ public class StreamingBenchmarks
 public class MyType
 {
     public int Id { get; set; }
-    public string Name { get; set; } = default!;        
+    public string Name { get; set; } = default!;
 }
 
 [JsonSerializable(typeof(MyType))]
