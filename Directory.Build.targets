@@ -31,6 +31,7 @@
         <PackageReference Update="Microsoft.OpenApi" Version="3.4.0" />
         <PackageReference Update="System.IO.Pipelines" Version="8.0.0" />
         <PackageReference Update="BenchmarkDotNet" Version="0.15.8" />
+        <PackageReference Update="BenchmarkDotNet.Diagnostics.Windows" Version="0.15.8"/>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net6.0'">
         <PackageReference Update="MSTest" Version="3.10.1" />

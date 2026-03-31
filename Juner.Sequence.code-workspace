@@ -17,6 +17,10 @@
 			"path": "./samples/Sequence",
 		},
 		{
+			"name": "samples/Juner.Sequence.Benchmark",
+			"path": "./samples/Sequence.Benchmark",
+		},
+		{
 			"name": "Juner.AspNetCore.Sequence",
 			"path": "./AspNetCore.Sequence",
 		},
@@ -35,7 +39,11 @@
 		{
 			"name": "Juner.Http.Sequence.Tests",
 			"path": "./Http.Sequence.Tests",
-		}
+		},
+		{
+			"name": "benchmarks",
+			"path": "./benchmarks",
+		},
 	],
 	"settings": {
 		"files.exclude": {

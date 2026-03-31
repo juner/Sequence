@@ -40,6 +40,27 @@ Built on top of `System.Text.Json` with an **AOT‑friendly**, **zero‑allocati
 
 ---
 
+## Performance (Summary)
+
+Juner.Sequence streams `IAsyncEnumerable<T>` directly, so its performance reflects  
+**enumeration cost + write cost**, without hidden buffering.
+
+Benchmark results for 100,000 items on .NET 10:
+
+| Method                   | Mean   | Allocated |
+|-------------------------|--------:|-----------:|
+| **NDJSON Streaming**    | 52.5 ms | 13.4 MB    |
+| **JSON Array (STJ)**    | 11.6 ms |  7.5 MB    |
+| **Iterate (baseline)**  | 41.3 ms | 288 B      |
+
+- JSON array is fastest due to single-buffer writes  
+- NDJSON adds I/O overhead but scales predictably with enumeration  
+- All runtimes (.NET 7 → 10) show consistent improvements  
+
+👉 Full benchmark results are available in [`benchmarks/BENCHMARKS.md`](benchmarks/BENCHMARKS.md)
+
+--
+
 ## Architecture
 
 ```mermaid

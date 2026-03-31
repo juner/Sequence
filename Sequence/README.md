@@ -159,6 +159,27 @@ The final frame is handled separately, with optional support for ignoring incomp
 
 ---
 
+## Performance (Detailed)
+
+100,000 items of `MyType` were serialized using NDJSON streaming, JSON array (buffered),
+and a baseline `IAsyncEnumerable<T>` iteration across .NET 7–10.
+
+| Runtime | NDJSON Streaming | JSON Array | Iterate (Baseline) |
+|--------|------------------:|-----------:|--------------------:|
+| net7   | 70.24 ms          | 20.42 ms   | 50.27 ms            |
+| net8   | 59.49 ms          | 15.25 ms   | 46.24 ms            |
+| net9   | 58.27 ms          | 13.10 ms   | 44.47 ms            |
+| net10  | 52.50 ms          | 11.61 ms   | 41.34 ms            |
+
+### Notes
+
+- NDJSON streaming includes both enumeration and write cost  
+- JSON array is fastest due to contiguous buffered writes  
+- All runtimes improve significantly from .NET 7 → 10  
+- Full BenchmarkDotNet output is available in `/benchmarks/BENCHMARKS.md`
+
+---
+
 ## Optional Extensions
 
 ### JsonTypeInfo (non‑generic) Extensions — *advanced use only*

@@ -7,7 +7,7 @@
 #:property Optimize=true
 #:property LangVersion=14
 #:package BenchmarkDotNet
-#:package Juner.Sequence@1.0.0-preview-2
+#:package Juner.Sequence@1.0.0
 
 using System.IO.Pipelines;
 using System.Text.Json.Serialization;
