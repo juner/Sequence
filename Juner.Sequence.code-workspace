@@ -59,6 +59,7 @@
 			"Http.Sequence": true,
 			"Http.Sequence.Tests": true,
 			"samples": true,
+			"benchmarks": true,
 		},
 		"explorer.fileNesting.enabled": true,
 		"explorer.fileNesting.patterns": {
