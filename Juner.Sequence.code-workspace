@@ -17,8 +17,8 @@
 			"path": "./samples/Sequence",
 		},
 		{
-			"name": "samples/Juner.Sequence.Benchmark",
-			"path": "./samples/Sequence.Benchmark",
+			"name": "benchmarks/Juner.Sequence.Benchmarks",
+			"path": "./benchmarks/Sequence.Benchmarks",
 		},
 		{
 			"name": "Juner.AspNetCore.Sequence",
@@ -60,6 +60,7 @@
 			"Http.Sequence.Tests": true,
 			"samples": true,
 			"benchmarks": true,
+			"Sequence.Benchmark": true,
 		},
 		"explorer.fileNesting.enabled": true,
 		"explorer.fileNesting.patterns": {
