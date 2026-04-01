@@ -101,6 +101,9 @@ dotnet run -f net10.0 -c Release -- --launchCount 3
 BenchmarkDotNet builds separate executables for each target runtime.  
 The benchmark project targets multiple TFMs to enable cross-runtime comparison.
 
+Note: You can run any target framework (net7.0, net8.0, net9.0, net10.0).  
+BenchmarkDotNet will automatically build and execute all configured jobs.
+
 ---
 
 ## Notes

@@ -6,7 +6,11 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Loggers;
+using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
 using Juner.Sequence.Extensions;
@@ -68,9 +72,9 @@ public class StreamingBenchmarks
     // 2. System.Text.Json — JSON array (non-streaming)
     // ------------------------------------------------------------
     [Benchmark]
-    public async Task Serialize_JsonArray()
+    public void Serialize_JsonArray()
     {
-        await using var stream = new MemoryStream();
+        using var stream = new MemoryStream();
         JsonSerializer.Serialize(
             stream,
             _arrayData,
@@ -162,10 +166,10 @@ public class StreamingBenchmarks
     // 7. System.Text.Json — JSON array Deserialize (non-streaming)
     // ------------------------------------------------------------
     [Benchmark]
-    public async Task Deserialize_JsonArray()
+    public void Deserialize_JsonArray()
     {
         // Prepare JSON array payload
-        await using var buffer = new MemoryStream();
+        using var buffer = new MemoryStream();
         JsonSerializer.Serialize(
             buffer,
             _arrayData,
@@ -244,7 +248,51 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        Job.Default.WithEnvironmentVariable("LIB_VERSION", $"{typeof(SequenceSerializer).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");        
-        BenchmarkRunner.Run<StreamingBenchmarks>(args: args);
+        var config = DefaultConfig.Instance
+            .AddExporter(new JunerMarkdownExporter());
+
+        BenchmarkRunner.Run<StreamingBenchmarks>(config, args: args);
+    }
+}
+
+public class JunerMarkdownExporter : IExporter
+{
+    public string Name => "JunerMarkdownExporter";
+
+    public void ExportToLog(Summary summary, ILogger logger) => logger.WriteLine("Exporting benchmark results...");
+
+    public IEnumerable<string> ExportToFiles(Summary summary, ILogger logger)
+    {
+        // 出力先が指定されていない場合はデフォルトにする
+        var path = Path.Combine(summary.ResultsDirectoryPath, "BENCHMARKS.md");
+
+        var markdown = GenerateMarkdown(summary);
+
+        File.WriteAllText(path, markdown);
+
+        logger.WriteLine($"Benchmark results written to: {path}");
+
+        return [path];
+    }
+
+    static string GenerateMarkdown(Summary summary)
+    {
+        using var sw = new StringWriter();
+        var logger = new AccumulationLogger();
+
+        sw.WriteLine("# Juner.Sequence Benchmarks");
+        sw.WriteLine();
+
+        sw.WriteLine($"**Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}");
+        sw.WriteLine($"**OS:** {summary.HostEnvironmentInfo.Os}");
+        sw.WriteLine();
+
+        sw.WriteLine("## Results");
+        sw.WriteLine();
+
+        MarkdownExporter.GitHub.ExportToLog(summary, logger);
+        sw.Write(logger.GetLog());
+
+        return sw.ToString();
     }
 }
