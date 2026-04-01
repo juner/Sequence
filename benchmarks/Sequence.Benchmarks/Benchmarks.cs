@@ -8,14 +8,15 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 
-using Juner.Sequence;
 using Juner.Sequence.Extensions;
 
+namespace Juner.Sequence.Benchmarks;
+
 [
-    SimpleJob(RuntimeMoniker.Net10_0, launchCount: 10),
-    SimpleJob(RuntimeMoniker.Net90, launchCount: 10),
-    SimpleJob(RuntimeMoniker.Net80, launchCount: 10),
-    SimpleJob(RuntimeMoniker.Net70, launchCount: 10)
+    SimpleJob(RuntimeMoniker.Net10_0),
+    SimpleJob(RuntimeMoniker.Net90),
+    SimpleJob(RuntimeMoniker.Net80),
+    SimpleJob(RuntimeMoniker.Net70)
 ]
 [MemoryDiagnoser,]
 public class StreamingBenchmarks
@@ -40,12 +41,12 @@ public class StreamingBenchmarks
             await Task.Yield(); // simulate async source
         }
     }
-    private static readonly JsonSerializerOptions jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         TypeInfoResolver = MyJsonContext.Default,
     };
 
-    private static readonly JsonTypeInfo<MyType> TypeInfo = (JsonTypeInfo<MyType>)jsonSerializerOptions.GetTypeInfo(typeof(MyType));
+    private static readonly JsonTypeInfo<MyType> _typeInfo = (JsonTypeInfo<MyType>)_jsonSerializerOptions.GetTypeInfo(typeof(MyType));
 
     // ------------------------------------------------------------
     // 1. Juner.Sequence — NDJSON streaming
@@ -58,7 +59,7 @@ public class StreamingBenchmarks
         await SequenceSerializer.SerializeAsync(
             stream,
             _streamData,
-            TypeInfo,
+            _typeInfo,
             SequenceSerializerOptions.JsonLines);
     }
 
@@ -98,7 +99,7 @@ public class StreamingBenchmarks
         await SequenceSerializer.SerializeAsync(
             writer,
             _streamData,
-            TypeInfo,
+            _typeInfo,
             SequenceSerializerOptions.JsonLines);
     }
 
@@ -113,14 +114,14 @@ public class StreamingBenchmarks
         await SequenceSerializer.SerializeAsync(
             buffer,
             _streamData,
-            TypeInfo,
+            _typeInfo,
             SequenceSerializerOptions.JsonLines);
 
         buffer.Position = 0;
 
         await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
             buffer,
-            TypeInfo,
+            _typeInfo,
             SequenceSerializerOptions.JsonLines))
         {
             // consume
@@ -138,7 +139,7 @@ public class StreamingBenchmarks
         await SequenceSerializer.SerializeAsync(
             buffer,
             _streamData,
-            TypeInfo,
+            _typeInfo,
             SequenceSerializerOptions.JsonLines);
 
         buffer.Position = 0;
@@ -147,7 +148,7 @@ public class StreamingBenchmarks
 
         await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
             reader,
-            TypeInfo,
+            _typeInfo,
             SequenceSerializerOptions.JsonLines))
         {
             // consume
@@ -219,7 +220,7 @@ public class StreamingBenchmarks
 
         await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<MyType>(
             buffer,
-            jsonSerializerOptions))
+            _jsonSerializerOptions))
         {
             // consume
         }

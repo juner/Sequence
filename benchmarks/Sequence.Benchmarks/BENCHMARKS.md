@@ -95,7 +95,7 @@ LaunchCount = 10
 Run the benchmark project:
 
 ```bash
-dotnet run -c Release
+dotnet run -f net10.0 -c Release -- --launchCount 3
 ```
 
 BenchmarkDotNet builds separate executables for each target runtime.  
