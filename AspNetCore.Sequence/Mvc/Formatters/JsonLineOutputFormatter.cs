@@ -1,4 +1,5 @@
 ﻿using Juner.AspNetCore.Sequence.Internals;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -6,9 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+
 using System.Text;
 using System.Text.Json;
+
 using Juner.Sequence;
+
 using System.Diagnostics.CodeAnalysis;
 
 

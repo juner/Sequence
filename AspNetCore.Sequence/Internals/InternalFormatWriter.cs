@@ -1,7 +1,4 @@
-﻿using Juner.Sequence;
-using Juner.Sequence.Extensions;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,6 +7,11 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Channels;
+
+using Juner.Sequence;
+using Juner.Sequence.Extensions;
+
+using Microsoft.AspNetCore.Http;
 
 namespace Juner.AspNetCore.Sequence.Internals;
 

@@ -10,8 +10,7 @@ public interface IProducesSequenceResponseTypeMetadata : IProducesResponseTypeMe
     Type? ItemType { get; }
 
     /// <summary>
-    /// 
-    /// </summary>
+    /// Gets the list of supported content types and associated metadata for the response.
     new IReadOnlyList<IContent> ContentTypes { get; }
 
 }

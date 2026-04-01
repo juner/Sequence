@@ -273,9 +273,7 @@ Benchmarks were executed using BenchmarkDotNet with 100,000 items of `MyType`.
 The complete BenchmarkDotNet output (all runtimes, all methods)  
 is available in:
 
-```
-/benchmarks/BENCHMARKS.md
-```
+[/benchmarks/Sequence.Benchmark/BENCHMARKS.md](../benchmarks/Sequence.Benchmark/BENCHMARKS.md)
 
 ---
 

@@ -3,6 +3,7 @@ using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+
 using static Juner.Sequence.SequenceSerializer_Deserialize;
 
 namespace Juner.Sequence;
@@ -85,12 +86,29 @@ public static partial class SequenceSerializer
 file static class SequenceSerializer_Deserialize
 {
 
+    /// <summary>
+    /// Delegate used to attempt to read a single frame from the input buffer.
+    /// Returns true when a complete frame is produced in <paramref name="frame"/>.
+    /// </summary>
+    /// <param name="buffer">The input buffer to read from. This will be sliced when a frame is consumed.</param>
+    /// <param name="start">List of possible start delimiters.</param>
+    /// <param name="end">List of possible end delimiters.</param>
+    /// <param name="frame">The resulting frame when the delegate returns true.</param>
+    /// <returns>True if a frame was found; otherwise false.</returns>
     public delegate bool TryReadFrame(
         ref ReadOnlySequence<byte> buffer,
         IReadOnlyList<ReadOnlyMemory<byte>> start,
         IReadOnlyList<ReadOnlyMemory<byte>> end,
         out ReadOnlySequence<byte> frame);
 
+    /// <summary>
+    /// Try to read a frame terminated by a single end byte.
+    /// </summary>
+    /// <param name="buffer">The input buffer to scan. Advances past the delimiter on success.</param>
+    /// <param name="_">Unused start delimiters.</param>
+    /// <param name="end">The end delimiter list (expected to contain one single-byte delimiter).</param>
+    /// <param name="frame">The extracted frame (excluding the delimiter) when successful.</param>
+    /// <returns>True if a frame was found; otherwise false.</returns>
     public static bool TryReadFrameEndByteOnly(
         ref ReadOnlySequence<byte> buffer,
         IReadOnlyList<ReadOnlyMemory<byte>> _,
@@ -108,6 +126,14 @@ file static class SequenceSerializer_Deserialize
         return true;
     }
 
+    /// <summary>
+    /// Try to read a frame which starts with a single start byte and ends with a single end byte.
+    /// </summary>
+    /// <param name="buffer">The input buffer to scan.</param>
+    /// <param name="start">The start delimiter list (expected to contain one single-byte delimiter).</param>
+    /// <param name="end">The end delimiter list (expected to contain one single-byte delimiter).</param>
+    /// <param name="frame">The extracted frame (excluding delimiters) when successful.</param>
+    /// <returns>True if a frame was found; otherwise false.</returns>
     public static bool TryReadFrameStartEndByteOnly(
          ref ReadOnlySequence<byte> buffer,
          IReadOnlyList<ReadOnlyMemory<byte>> start,
@@ -131,6 +157,14 @@ file static class SequenceSerializer_Deserialize
         return true;
     }
 
+    /// <summary>
+    /// Try to read a frame using arbitrary multi-byte start/end delimiters.
+    /// </summary>
+    /// <param name="buffer">The input buffer to scan.</param>
+    /// <param name="start">The list of possible start delimiters.</param>
+    /// <param name="end">The list of possible end delimiters.</param>
+    /// <param name="frame">The extracted frame (excluding delimiters) when successful.</param>
+    /// <returns>True if a frame was found; otherwise false.</returns>
     public static bool TryReadFrameAny(
          ref ReadOnlySequence<byte> buffer,
          IReadOnlyList<ReadOnlyMemory<byte>> start,
@@ -152,6 +186,13 @@ file static class SequenceSerializer_Deserialize
         return true;
     }
 
+    /// <summary>
+    /// Check whether the reader is positioned at any of the provided start delimiters.
+    /// Advances the reader past the matching start delimiter when found.
+    /// </summary>
+    /// <param name="reader">The sequence reader to inspect.</param>
+    /// <param name="start">The list of possible start delimiters.</param>
+    /// <returns>True if a start delimiter was matched; otherwise false.</returns>
     public static bool MatchStart(ref SequenceReader<byte> reader, IReadOnlyList<ReadOnlyMemory<byte>> start)
     {
         if (start.Count is 0)
@@ -166,6 +207,14 @@ file static class SequenceSerializer_Deserialize
         return false;
     }
 
+    /// <summary>
+    /// Attempt to read until any of the provided delimiters is encountered.
+    /// Performs a longest-match selection when multiple delimiters share the same starting byte.
+    /// </summary>
+    /// <param name="reader">The sequence reader to scan from.</param>
+    /// <param name="delimiters">List of possible end delimiters.</param>
+    /// <param name="frame">The extracted frame (excluding the delimiter) when successful.</param>
+    /// <returns>True if a delimiter and frame were found; otherwise false.</returns>
     public static bool TryReadToAny(
         ref SequenceReader<byte> reader,
         IReadOnlyList<ReadOnlyMemory<byte>> delimiters,
@@ -213,6 +262,14 @@ file static class SequenceSerializer_Deserialize
         return false;
     }
 
+    /// <summary>
+    /// Attempt to read the final frame from the buffer when no end delimiter is present.
+    /// The method checks for a valid start delimiter and then returns the remaining buffer as a frame.
+    /// </summary>
+    /// <param name="buffer">The input buffer to read from.</param>
+    /// <param name="start">List of possible start delimiters.</param>
+    /// <param name="frame">The remaining buffer that represents the last frame.</param>
+    /// <returns>True if a final frame was extracted; otherwise false.</returns>
     public static bool TryReadLastFrame(
         ref ReadOnlySequence<byte> buffer,
         IReadOnlyList<ReadOnlyMemory<byte>> start,

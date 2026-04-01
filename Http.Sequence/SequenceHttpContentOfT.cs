@@ -1,7 +1,8 @@
-using Juner.Sequence;
 using System.IO.Pipelines;
 using System.Net;
 using System.Text.Json.Serialization.Metadata;
+
+using Juner.Sequence;
 
 namespace Juner.Http.Sequence;
 

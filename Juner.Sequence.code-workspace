@@ -17,8 +17,8 @@
 			"path": "./samples/Sequence",
 		},
 		{
-			"name": "samples/Juner.Sequence.Benchmark",
-			"path": "./samples/Sequence.Benchmark",
+			"name": "benchmarks/Juner.Sequence.Benchmarks",
+			"path": "./benchmarks/Sequence.Benchmarks",
 		},
 		{
 			"name": "Juner.AspNetCore.Sequence",
@@ -27,6 +27,10 @@
 		{
 			"name": "Juner.AspNetCore.Sequence.Tests",
 			"path": "./AspNetCore.Sequence.Tests",
+		},
+		{
+			"name": "benchmarks/Juner.AspNetCore.Sequence.Benchmarks",
+			"path": "./benchmarks/AspNetCore.Sequence.Benchmarks",
 		},
 		{
 			"name": "samples/Juner.AspNetCore.Sequence",
@@ -39,6 +43,10 @@
 		{
 			"name": "Juner.Http.Sequence.Tests",
 			"path": "./Http.Sequence.Tests",
+		},
+		{
+			"name": "benchmarks/Juner.Http.Sequence.Benchmarks",
+			"path": "./benchmarks/Http.Sequence.Benchmarks",
 		},
 		{
 			"name": "benchmarks",
@@ -60,6 +68,9 @@
 			"Http.Sequence.Tests": true,
 			"samples": true,
 			"benchmarks": true,
+			"Sequence.Benchmarks": true,
+			"Http.Sequence.Benchmarks": true,
+			"AspNetCore.Sequence.Benchmarks": true,
 		},
 		"explorer.fileNesting.enabled": true,
 		"explorer.fileNesting.patterns": {

@@ -15,15 +15,17 @@ public static class SequenceSerializerJsonSerializerOptionsExtensions
     extension(SequenceSerializer)
     {
         /// <summary>
-        /// 
+        /// Serialize an asynchronous sequence using a <see cref="JsonSerializerOptions"/> instance to
+        /// obtain the required <see cref="JsonTypeInfo{T}"/>. Throws when the type is not registered in the
+        /// provided options.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="writer"></param>
-        /// <param name="enumerable"></param>
-        /// <param name="jsonSerializerOptions"></param>
-        /// <param name="options"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The element type to serialize.</typeparam>
+        /// <param name="writer">Destination <see cref="PipeWriter"/>.</param>
+        /// <param name="enumerable">The asynchronous sequence to serialize.</param>
+        /// <param name="jsonSerializerOptions">JsonSerializerOptions that contain type information.</param>
+        /// <param name="options">Write options controlling framing and flush behaviour.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the asynchronous serialize operation.</returns>
         public static Task SerializeAsync<T>(PipeWriter writer, IAsyncEnumerable<T> enumerable, JsonSerializerOptions jsonSerializerOptions, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
         {
 #if !NET8_0_OR_GREATER

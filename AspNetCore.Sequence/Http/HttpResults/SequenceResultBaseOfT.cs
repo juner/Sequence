@@ -1,9 +1,11 @@
-﻿using Juner.Sequence;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
+
+using Juner.Sequence;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Juner.AspNetCore.Sequence.Http.HttpResults;
 

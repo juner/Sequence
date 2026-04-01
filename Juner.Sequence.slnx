@@ -9,10 +9,11 @@
   </Folder>
   <Folder Name="/benchmarks/">
     <File Path="benchmarks/BENCHMARKS.md" />
+    <Project Path="benchmarks/AspNetCore.Sequence.Benchmarks/Juner.AspNetCore.Sequence.Benchmarks.csproj" />
+    <Project Path="benchmarks/Http.Sequence.Benchmarks/Juner.Http.Sequence.Benchmarks.csproj" />
+    <Project Path="benchmarks/Sequence.Benchmarks/Juner.Sequence.Benchmarks.csproj" />
   </Folder>
-  <Folder Name="/samples/">
-    <Project Path="samples/Sequence.Benchmark/Juner.Sequence.Benchmark.csproj" />
-  </Folder>
+  <Folder Name="/samples/" />
   <Folder Name="/samples/Juner.AspNetCore.Sequence/">
     <File Path="samples/AspNetCore.Sequence/appsettings.Development.json" />
     <File Path="samples/AspNetCore.Sequence/appsettings.json" />

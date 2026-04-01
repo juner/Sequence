@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Channels;
+
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Channels;
 
 namespace Juner.AspNetCore.Sequence.Http.HttpResults;
 

@@ -1,7 +1,9 @@
-﻿using Juner.AspNetCore.Sequence.Mvc.Formatters;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Juner.AspNetCore.Sequence.Mvc.Formatters;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable IDE0130 // Namespace がフォルダー構造と一致しません
 namespace Microsoft.Extensions.DependencyInjection;

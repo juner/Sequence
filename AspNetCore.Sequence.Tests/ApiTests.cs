@@ -1,12 +1,14 @@
+using System.Text;
+
 using Juner.AspNetCore.Sequence.Http;
 using Juner.AspNetCore.Sequence.Http.HttpResults;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text;
 #if NET8_0_OR_GREATER
 using Microsoft.Extensions.Hosting;
 #endif

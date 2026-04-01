@@ -1,10 +1,12 @@
+using System.Text;
+using System.Threading.Channels;
+
 using Juner.AspNetCore.Sequence.Mvc.Formatters;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text;
-using System.Threading.Channels;
 
 namespace Juner.AspNetCore.Sequence;
 

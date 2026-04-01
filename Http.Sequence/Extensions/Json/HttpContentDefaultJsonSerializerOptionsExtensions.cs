@@ -1,6 +1,7 @@
-using Juner.Sequence;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+
+using Juner.Sequence;
 
 namespace Juner.Http.Sequence.Extensions.Json;
 

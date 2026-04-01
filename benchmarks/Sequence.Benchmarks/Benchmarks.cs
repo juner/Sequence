@@ -1,19 +1,25 @@
-﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
-using System.Buffers;
-using System.Text.Json;
-using Juner.Sequence;
-using System.Text.Json.Serialization.Metadata;
-using System.Text.Json.Serialization;
-using Juner.Sequence.Extensions;
-using BenchmarkDotNet.Jobs;
+﻿using System.Buffers;
 using System.IO.Pipelines;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Exporters;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Loggers;
+using BenchmarkDotNet.Reports;
+using BenchmarkDotNet.Running;
+
+using Juner.Sequence.Extensions;
+
+namespace Juner.Sequence.Benchmarks;
 
 [
-    SimpleJob(RuntimeMoniker.Net10_0, launchCount: 10),
-    SimpleJob(RuntimeMoniker.Net90, launchCount: 10),
-    SimpleJob(RuntimeMoniker.Net80, launchCount: 10),
-    SimpleJob(RuntimeMoniker.Net70, launchCount: 10)
+    SimpleJob(RuntimeMoniker.Net10_0),
+    SimpleJob(RuntimeMoniker.Net90),
+    SimpleJob(RuntimeMoniker.Net80),
+    SimpleJob(RuntimeMoniker.Net70)
 ]
 [MemoryDiagnoser,]
 public class StreamingBenchmarks
@@ -23,9 +29,7 @@ public class StreamingBenchmarks
 
     public StreamingBenchmarks()
     {
-        _arrayData = Enumerable.Range(0, 100_000)
-            .Select(i => new MyType { Id = i, Name = $"Item {i}" })
-            .ToArray();
+        _arrayData = [.. Enumerable.Range(0, 100_000).Select(i => new MyType { Id = i, Name = $"Item {i}" })];
 
         _streamData = GetStreamData();
     }
@@ -38,12 +42,6 @@ public class StreamingBenchmarks
             await Task.Yield(); // simulate async source
         }
     }
-    private static readonly JsonSerializerOptions jsonSerializerOptions = new()
-    {
-        TypeInfoResolver = MyJsonContext.Default,
-    };
-
-    private static readonly JsonTypeInfo<MyType> TypeInfo = (JsonTypeInfo<MyType>)jsonSerializerOptions.GetTypeInfo(typeof(MyType));
 
     // ------------------------------------------------------------
     // 1. Juner.Sequence — NDJSON streaming
@@ -56,7 +54,7 @@ public class StreamingBenchmarks
         await SequenceSerializer.SerializeAsync(
             stream,
             _streamData,
-            TypeInfo,
+            MyJsonContext.Default.MyType,
             SequenceSerializerOptions.JsonLines);
     }
 
@@ -64,9 +62,9 @@ public class StreamingBenchmarks
     // 2. System.Text.Json — JSON array (non-streaming)
     // ------------------------------------------------------------
     [Benchmark]
-    public async Task Serialize_JsonArray()
+    public void Serialize_JsonArray()
     {
-        await using var stream = new MemoryStream();
+        using var stream = new MemoryStream();
         JsonSerializer.Serialize(
             stream,
             _arrayData,
@@ -96,7 +94,7 @@ public class StreamingBenchmarks
         await SequenceSerializer.SerializeAsync(
             writer,
             _streamData,
-            TypeInfo,
+            MyJsonContext.Default.MyType,
             SequenceSerializerOptions.JsonLines);
     }
 
@@ -111,14 +109,14 @@ public class StreamingBenchmarks
         await SequenceSerializer.SerializeAsync(
             buffer,
             _streamData,
-            TypeInfo,
+            MyJsonContext.Default.MyType,
             SequenceSerializerOptions.JsonLines);
 
         buffer.Position = 0;
 
-        await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
+        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
             buffer,
-            TypeInfo,
+            MyJsonContext.Default.MyType,
             SequenceSerializerOptions.JsonLines))
         {
             // consume
@@ -136,7 +134,7 @@ public class StreamingBenchmarks
         await SequenceSerializer.SerializeAsync(
             buffer,
             _streamData,
-            TypeInfo,
+            MyJsonContext.Default.MyType,
             SequenceSerializerOptions.JsonLines);
 
         buffer.Position = 0;
@@ -145,7 +143,7 @@ public class StreamingBenchmarks
 
         await foreach (var item in SequenceSerializer.DeserializeAsyncEnumerable(
             reader,
-            TypeInfo,
+            MyJsonContext.Default.MyType,
             SequenceSerializerOptions.JsonLines))
         {
             // consume
@@ -158,10 +156,10 @@ public class StreamingBenchmarks
     // 7. System.Text.Json — JSON array Deserialize (non-streaming)
     // ------------------------------------------------------------
     [Benchmark]
-    public async Task Deserialize_JsonArray()
+    public void Deserialize_JsonArray()
     {
         // Prepare JSON array payload
-        await using var buffer = new MemoryStream();
+        using var buffer = new MemoryStream();
         JsonSerializer.Serialize(
             buffer,
             _arrayData,
@@ -217,7 +215,7 @@ public class StreamingBenchmarks
 
         await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<MyType>(
             buffer,
-            jsonSerializerOptions))
+            MyJsonContext.Default.Options))
         {
             // consume
         }
@@ -238,5 +236,77 @@ public partial class MyJsonContext : JsonSerializerContext { }
 
 public class Program
 {
-    public static void Main(string[] args) => BenchmarkRunner.Run<StreamingBenchmarks>(args: args);
+    public static void Main(string[] args)
+    {
+        var config = DefaultConfig.Instance
+            .AddExporter(new JunerMarkdownExporter());
+
+        BenchmarkRunner.Run<StreamingBenchmarks>(config, args: args);
+    }
+}
+
+public class JunerMarkdownExporter : IExporter
+{
+    public string Name => "JunerMarkdownExporter";
+
+    public void ExportToLog(Summary summary, ILogger logger) => logger.WriteLine("Exporting benchmark results...");
+
+    public IEnumerable<string> ExportToFiles(Summary summary, ILogger logger)
+    {
+        // 出力先が指定されていない場合はデフォルトにする
+        var path = Path.Combine(summary.ResultsDirectoryPath, "BENCHMARKS.md");
+
+        var markdown = GenerateMarkdown(summary);
+
+        File.WriteAllText(path, markdown);
+
+        logger.WriteLine($"Benchmark results written to: {path}");
+
+        return [path];
+    }
+
+    static string GenerateMarkdown(Summary summary)
+    {
+        using var sw = new StringWriter();
+        var logger = new AccumulationLogger();
+
+        sw.WriteLine("# Juner.Sequence Benchmarks");
+        sw.WriteLine();
+        sw.WriteLine("**Dataset:** 100,000 items of `MyType` (Id + Name)");
+        sw.WriteLine("**Format:** NDJSON (streaming) vs JSON array (buffered)");
+        sw.WriteLine("**Purpose:** Compare Juner.Sequence NDJSON streaming with System.Text.Json JSON array serialization/deserialization.");
+        sw.WriteLine();
+        sw.WriteLine($"**Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}");
+        sw.WriteLine($"**OS:** {summary.HostEnvironmentInfo.Os}");
+        sw.WriteLine();
+
+        sw.WriteLine("## Results");
+        sw.WriteLine();
+
+        MarkdownExporter.GitHub.ExportToLog(summary, logger);
+        sw.Write(logger.GetLog());
+        sw.WriteLine();
+
+        sw.WriteLine("## Reproduction");
+        sw.WriteLine();
+        sw.WriteLine("Run the benchmark project:");
+        sw.WriteLine();
+        sw.WriteLine("```bash");
+        sw.WriteLine("dotnet run -f net10.0 -c Release -- --launchCount 1");
+        sw.WriteLine("```");
+        sw.WriteLine();
+        sw.WriteLine("BenchmarkDotNet builds separate executables for each target runtime. ");
+        sw.WriteLine("The benchmark project targets multiple TFMs to enable cross-runtime comparison.");
+        sw.WriteLine();
+        sw.WriteLine("Note: You can run any target framework (net7.0, net8.0, net9.0, net10.0).");
+        sw.WriteLine("BenchmarkDotNet will automatically build and execute all configured jobs.");
+        sw.WriteLine();
+        sw.WriteLine("---");
+        sw.WriteLine();
+        sw.WriteLine("## Notes");
+        sw.WriteLine();
+        sw.WriteLine("This benchmark is intended to show **relative performance characteristics**, not absolute throughput numbers.  Different machines will produce different absolute timings,  but the relationships between methods remain consistent.");
+
+        return sw.ToString();
+    }
 }
