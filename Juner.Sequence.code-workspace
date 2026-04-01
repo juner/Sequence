@@ -41,6 +41,10 @@
 			"path": "./Http.Sequence.Tests",
 		},
 		{
+			"name": "benchmarks/Juner.Http.Sequence.Benchmarks",
+			"path": "./benchmarks/Http.Sequence.Benchmarks",
+		},
+		{
 			"name": "benchmarks",
 			"path": "./benchmarks",
 		},
@@ -61,6 +65,7 @@
 			"samples": true,
 			"benchmarks": true,
 			"Sequence.Benchmarks": true,
+			"Http.Sequence.Benchmarks": true,
 		},
 		"explorer.fileNesting.enabled": true,
 		"explorer.fileNesting.patterns": {
