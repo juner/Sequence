@@ -1,9 +1,10 @@
-﻿using Juner.Sequence;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Channels;
+
+using Juner.Sequence;
 
 namespace Juner.AspNetCore.Sequence.Internals;
 

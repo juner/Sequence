@@ -1,13 +1,15 @@
-﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
-using System.Buffers;
-using System.Text.Json;
-using Juner.Sequence;
-using System.Text.Json.Serialization.Metadata;
-using System.Text.Json.Serialization;
-using Juner.Sequence.Extensions;
-using BenchmarkDotNet.Jobs;
+﻿using System.Buffers;
 using System.IO.Pipelines;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Running;
+
+using Juner.Sequence;
+using Juner.Sequence.Extensions;
 
 [
     SimpleJob(RuntimeMoniker.Net10_0, launchCount: 10),

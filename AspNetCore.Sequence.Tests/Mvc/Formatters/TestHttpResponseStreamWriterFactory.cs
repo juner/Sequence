@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Infrastructure;
+﻿using System.Text;
+
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
-using System.Text;
 
 namespace Juner.AspNetCore.Sequence.Mvc.Formatters;
 

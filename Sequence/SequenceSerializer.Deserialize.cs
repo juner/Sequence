@@ -3,6 +3,7 @@ using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+
 using static Juner.Sequence.SequenceSerializer_Deserialize;
 
 namespace Juner.Sequence;

@@ -60,7 +60,7 @@
 			"Http.Sequence.Tests": true,
 			"samples": true,
 			"benchmarks": true,
-			"Sequence.Benchmark": true,
+			"Sequence.Benchmarks": true,
 		},
 		"explorer.fileNesting.enabled": true,
 		"explorer.fileNesting.patterns": {

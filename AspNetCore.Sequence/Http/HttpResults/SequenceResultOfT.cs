@@ -1,16 +1,18 @@
-﻿using Juner.Sequence;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Channels;
+
+using Juner.Sequence;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Mime;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading.Channels;
 
 namespace Juner.AspNetCore.Sequence.Http.HttpResults;
 

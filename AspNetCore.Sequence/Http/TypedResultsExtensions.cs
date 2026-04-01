@@ -1,6 +1,8 @@
-﻿using Juner.AspNetCore.Sequence.Http.HttpResults;
+﻿using System.Threading.Channels;
+
+using Juner.AspNetCore.Sequence.Http.HttpResults;
+
 using Microsoft.AspNetCore.Http;
-using System.Threading.Channels;
 
 namespace Juner.AspNetCore.Sequence.Http;
 

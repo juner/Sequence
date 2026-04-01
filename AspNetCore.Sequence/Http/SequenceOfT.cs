@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Http.Metadata;
+﻿using System.Threading.Channels;
+
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
-using System.Threading.Channels;
 
 namespace Juner.AspNetCore.Sequence.Http;
 

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
+
 using OutputFormatter = Juner.AspNetCore.Sequence.Mvc.Formatters.NdJsonOutputFormatter;
 
 namespace Juner.AspNetCore.Sequence.Mvc.Formatters;

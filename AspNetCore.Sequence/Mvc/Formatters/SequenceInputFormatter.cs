@@ -1,5 +1,15 @@
-﻿using Juner.AspNetCore.Sequence.Internals;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Channels;
+
+#if !NET8_0_OR_GREATER
+using System.Text.Json.Serialization.Metadata;
+#endif
+
+using Juner.AspNetCore.Sequence.Internals;
 using Juner.Sequence;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,13 +18,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Channels;
-#if !NET8_0_OR_GREATER
-using System.Text.Json.Serialization.Metadata;
-#endif
 
 namespace Juner.AspNetCore.Sequence.Mvc.Formatters;
 
@@ -172,14 +175,14 @@ public partial class SequenceInputFormatter : TextInputFormatter
 
     #region delimiters
 
-    static readonly byte[] RS = [.. "\u001e"u8];
-    static readonly byte[] LF = [.. "\n"u8];
+    static readonly byte[] _rs = [.. "\u001e"u8];
+    static readonly byte[] _lf = [.. "\n"u8];
 
-    static readonly ReadOnlyMemory<byte>[] JSONSEQ_START = [RS];
-    static readonly ReadOnlyMemory<byte>[] JSONSEQ_END = [LF];
+    static readonly ReadOnlyMemory<byte>[] _jsonseq_start = [_rs];
+    static readonly ReadOnlyMemory<byte>[] _jsonseq_end = [_lf];
 
-    static readonly ReadOnlyMemory<byte>[] NDJSON_START = [];
-    static readonly ReadOnlyMemory<byte>[] NDJSON_END = [LF];
+    static readonly ReadOnlyMemory<byte>[] _ndjson_start = [];
+    static readonly ReadOnlyMemory<byte>[] _ndjson_end = [_lf];
 
     #endregion
 
