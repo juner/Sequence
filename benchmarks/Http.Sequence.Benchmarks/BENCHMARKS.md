@@ -39,3 +39,26 @@ LaunchCount=1
 | Deserialize_JsonArray_STJ       | .NET 8.0  | .NET 8.0  | 37.08 ms | 0.610 ms | 0.570 ms | 1928.5714 | 428.5714 | 285.7143 |   10.7 MB |
 | Deserialize_NdJson_HttpSequence | .NET 9.0  | .NET 9.0  | 51.01 ms | 0.539 ms | 0.504 ms | 1800.0000 | 200.0000 | 200.0000 |   10.7 MB |
 | Deserialize_JsonArray_STJ       | .NET 9.0  | .NET 9.0  | 30.12 ms | 0.405 ms | 0.359 ms | 2031.2500 | 562.5000 | 343.7500 |   10.7 MB |
+
+## Reproduction
+
+Run the benchmark project:
+
+```bash
+dotnet run -f net10.0 -c Release -- --launchCount 3
+```
+
+BenchmarkDotNet builds separate executables for each target runtime.  
+The benchmark project targets multiple TFMs to enable cross-runtime comparison.
+
+Note: You can run any target framework (net7.0, net8.0, net9.0, net10.0).  
+BenchmarkDotNet will automatically build and execute all configured jobs.
+
+---
+
+## Notes
+
+This benchmark is intended to show **relative performance characteristics**,  
+not absolute throughput numbers.  
+Different machines will produce different absolute timings,  
+but the relationships between methods remain consistent.
