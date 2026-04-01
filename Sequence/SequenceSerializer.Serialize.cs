@@ -9,15 +9,17 @@ namespace Juner.Sequence;
 public static partial class SequenceSerializer
 {
     /// <summary>
-    /// serialize sequence format
+    /// Serialize an asynchronous sequence of objects into the provided <see cref="PipeWriter"/>.
+    /// Elements are serialized using the supplied <see cref="JsonTypeInfo{T}"/> and the behaviour
+    /// for framing and flushing is controlled by <paramref name="options"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="writer"></param>
-    /// <param name="enumerable"></param>
-    /// <param name="jsonTypeInfo"></param>
-    /// <param name="options"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The element type to serialize.</typeparam>
+    /// <param name="writer">The destination <see cref="PipeWriter"/>.</param>
+    /// <param name="enumerable">The asynchronous sequence to serialize.</param>
+    /// <param name="jsonTypeInfo">The JsonTypeInfo used for serializing elements.</param>
+    /// <param name="options">Write options that control delimiters and flush strategy.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for async operations.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
 #if NET9_0_OR_GREATER
     public static async Task SerializeAsync<T>(PipeWriter writer, IAsyncEnumerable<T> enumerable, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
     {

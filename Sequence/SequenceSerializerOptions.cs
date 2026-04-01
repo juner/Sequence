@@ -83,7 +83,8 @@ public sealed record SequenceSerializerOptions(
     static SequenceSerializerOptions? _empty;
 
     /// <summary>
-    /// invalid emtpy option (default value)
+    /// Represents the default (invalid) options instance. This is used as the fallback
+    /// value when no meaningful read/write delimiters are configured.
     /// </summary>
     internal static SequenceSerializerOptions Default
     {

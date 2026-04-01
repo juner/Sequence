@@ -13,16 +13,18 @@ public static class SequenceSerializerEncodeExntensions
     extension(SequenceSerializer)
     {
         /// <summary>
-        /// serialize sequence format
+        /// Serialize an asynchronous sequence to the supplied <see cref="PipeWriter"/> using the
+        /// specified <see cref="Encoding"/>. When the encoding is UTF-8 the call is delegated to
+        /// the core serializer to avoid transcoding overhead.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="writer"></param>
-        /// <param name="enumerable"></param>
-        /// <param name="jsonTypeInfo"></param>
-        /// <param name="options"></param>
-        /// <param name="encoding"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The element type to serialize.</typeparam>
+        /// <param name="writer">Destination <see cref="PipeWriter"/>.</param>
+        /// <param name="enumerable">The asynchronous sequence to serialize.</param>
+        /// <param name="jsonTypeInfo">Json type information for element serialization.</param>
+        /// <param name="options">Write options controlling delimiters and flush behaviour.</param>
+        /// <param name="encoding">The target encoding for the output. When null UTF-8 is used.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task representing the asynchronous serialize operation.</returns>
         public static Task SerializeAsync<T>(PipeWriter writer, IAsyncEnumerable<T> enumerable, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerWriteOptions options, Encoding? encoding, CancellationToken cancellationToken = default)
         {
             encoding ??= Encoding.UTF8;
