@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+	<SuppressTfmSupportBuildWarnings>false</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
   <PropertyGroup>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -15,14 +16,18 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+	<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0'">
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.5" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Sequence\Juner.Sequence.csproj" />
+    <ProjectReference Include="..\..\AspNetCore.Sequence\Juner.AspNetCore.Sequence.csproj" />
   </ItemGroup>
 </Project>

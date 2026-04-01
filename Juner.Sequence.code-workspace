@@ -29,6 +29,10 @@
 			"path": "./AspNetCore.Sequence.Tests",
 		},
 		{
+			"name": "benchmarks/Juner.AspNetCore.Sequence.Benchmarks",
+			"path": "./benchmarks/AspNetCore.Sequence.Benchmarks",
+		},
+		{
 			"name": "samples/Juner.AspNetCore.Sequence",
 			"path": "./samples/AspNetCore.Sequence",
 		},
@@ -66,6 +70,7 @@
 			"benchmarks": true,
 			"Sequence.Benchmarks": true,
 			"Http.Sequence.Benchmarks": true,
+			"AspNetCore.Sequence.Benchmarks": true,
 		},
 		"explorer.fileNesting.enabled": true,
 		"explorer.fileNesting.patterns": {
