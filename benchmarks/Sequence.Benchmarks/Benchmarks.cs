@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.IO.Pipelines;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -241,5 +242,9 @@ public partial class MyJsonContext : JsonSerializerContext { }
 
 public class Program
 {
-    public static void Main(string[] args) => BenchmarkRunner.Run<StreamingBenchmarks>(args: args);
+    public static void Main(string[] args)
+    {
+        Job.Default.WithEnvironmentVariable("LIB_VERSION", $"{typeof(SequenceSerializer).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");        
+        BenchmarkRunner.Run<StreamingBenchmarks>(args: args);
+    }
 }
