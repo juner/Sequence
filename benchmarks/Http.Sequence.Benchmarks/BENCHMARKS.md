@@ -1,7 +1,17 @@
 # Juner.Http.Sequence Benchmarks
 
-**Runtime:** .NET 10.0.5 (10.0.5, 10.0.526.15411)
-**OS:** Windows 11 (10.0.26200.8116/25H2/2025Update/HudsonValley2)
+**Purpose:** Measure HTTP client-side streaming performance using Juner.Http.Sequence.
+
+This benchmark focuses on how fast an `HttpClient` can consume streaming JSON formats:
+
+- **NDJSON** (newline-delimited JSON)
+- **JSON Lines** (RFC 7464 style)
+- **JSON Sequence** (`0x1E` framed JSON)
+
+All benchmarks use `FakeHttpMessageHandler` to eliminate network overhead and measure pure client-side parsing performance.
+
+- **Runtime:** .NET 10.0.5 (10.0.5, 10.0.526.15411)
+- **OS:** Windows 11 (10.0.26200.8116/25H2/2025Update/HudsonValley2)
 
 ## Results
 
