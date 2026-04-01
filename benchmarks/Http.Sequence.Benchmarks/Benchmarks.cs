@@ -179,14 +179,23 @@ public class JunerMarkdownExporter : IExporter
         using var sw = new StringWriter();
         var logger = new AccumulationLogger();
 
-        sw.WriteLine("# Juner.Http.Sequence Benchmarks");
+        sw.WriteLine("""
+        # Juner.Http.Sequence Benchmarks
+
+        **Purpose:** Measure HTTP client-side streaming performance using Juner.Http.Sequence.
+
+        This benchmark focuses on how fast an `HttpClient` can consume streaming JSON formats:
+
+        - **NDJSON** (newline-delimited JSON)
+        - **JSON Lines** (RFC 7464 style)
+        - **JSON Sequence** (`0x1E` framed JSON)
+
+        All benchmarks use `FakeHttpMessageHandler` to eliminate network overhead and measure pure client-side parsing performance.
+        """);
         sw.WriteLine();
-        sw.WriteLine("**Dataset:** 100,000 items of `MyType` (Id + Name)");
-        sw.WriteLine("**Format:** NDJSON (streaming) vs JSON array (buffered)");
-        sw.WriteLine("**Purpose:** Compare Juner.Http.Sequence streaming with STJ's JSON array streaming.");
-        sw.WriteLine();
-        sw.WriteLine($"**Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}");
-        sw.WriteLine($"**OS:** {summary.HostEnvironmentInfo.Os}");
+
+        sw.WriteLine($"- **Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}");
+        sw.WriteLine($"- **OS:** {summary.HostEnvironmentInfo.Os}");
         sw.WriteLine();
 
         sw.WriteLine("## Results");
