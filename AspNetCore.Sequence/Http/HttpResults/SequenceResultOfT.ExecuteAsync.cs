@@ -44,8 +44,10 @@ public partial class SequenceResult<T> : IResult
             httpContext,
             _contentType,
             out var contentType,
-            out var options))
-            throw new InvalidOperationException();
+            out var options)) 
+            throw new InvalidOperationException("not select type");
+
+        LogSelectType(logger, contentType, options);
 
         httpContext.Response.ContentType = contentType;
 
@@ -77,5 +79,9 @@ public partial class SequenceResult<T> : IResult
             options,
             httpContext.RequestAborted);
     }
-
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "switch contentType:{contentType} options:{options}"
+    )]
+    static partial void LogSelectType(ILogger logger, string contentType, ISequenceSerializerWriteOptions options);
 }
