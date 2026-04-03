@@ -44,7 +44,7 @@ public partial class SequenceResult<T> : IResult
             httpContext,
             _contentType,
             out var contentType,
-            out var options)) 
+            out var options))
             throw new InvalidOperationException("not select type");
 
         LogSelectType(logger, contentType, options);
