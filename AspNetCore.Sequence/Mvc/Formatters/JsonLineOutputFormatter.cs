@@ -63,13 +63,8 @@ public partial class JsonLineOutputFormatter : TextOutputFormatter
         return accept.Any(v => v.MediaType == ContentType);
     }
 
-    ILogger GetLogger(IServiceProvider provider)
-    {
-        var loggerType = typeof(ILogger<>).MakeGenericType(GetType());
-        var logger = provider.GetService(loggerType) as ILogger;
-        if (logger is not null) return logger;
-        return NullLogger.Instance;
-    }
+    static ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<JsonLineOutputFormatter>>() ?? (ILogger)NullLogger.Instance;
+
     static JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
     {
         var jsonOptions = provider.GetService<IOptions<JsonOptions>>()?.Value;
@@ -88,7 +83,7 @@ public partial class JsonLineOutputFormatter : TextOutputFormatter
         ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         var cancellationToken = context.HttpContext.RequestAborted;
-        var logger = GetLogger(context.HttpContext.RequestServices);
+        var logger = JsonLineOutputFormatter.GetLogger(context.HttpContext.RequestServices);
         var serializerOptions = GetOptions(context.HttpContext.RequestServices, logger);
 #if !NET8_0_OR_GREATER
         serializerOptions.TypeInfoResolver ??= new DefaultJsonTypeInfoResolver();

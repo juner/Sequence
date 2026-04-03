@@ -1,9 +1,11 @@
 #if NET10_0_OR_GREATER
+using System.Text.Json.Nodes;
+
 using Juner.AspNetCore.Sequence.Http;
+
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
-using System.Text.Json.Nodes;
 
 #pragma warning disable IDE0130 // Namespace がフォルダー構造と一致しません
 namespace Microsoft.Extensions.DependencyInjection;
@@ -25,7 +27,7 @@ public static class OpenApiExtensions
     }
 }
 
-public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
+public class SequenceOpenApiTransformer : IOpenApiOperationTransformer
 {
     public async Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
@@ -47,7 +49,7 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
             .OfType<IProducesSequenceResponseTypeMetadata>()
             .ToArray();
 
-        if (produces1 is { Length:>0})
+        if (produces1 is { Length: > 0 })
         {
             operation.Responses
                 = await CreateResponses(operation.Responses, produces1, context, openApiVersion, cancellationToken);
@@ -80,11 +82,12 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
             if (isStreaming)
             {
                 mediaType.Schema ??= (schema ??= await context.GetOrCreateSchemaAsync(typeof(Stream), cancellationToken: cancellationToken));
-                
+
                 var extensions = mediaType.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 extensions.TryAdd("x-streaming", new JsonNodeExtension(JsonValue.Create(true)));
                 extensions.TryAdd("x-itemSchema", new JsonNodeExtension(typeNode.DeepClone()));
-            } else if (notStreamingType is not null)
+            }
+            else if (notStreamingType is not null)
             {
                 mediaType.Schema = await context.GetOrCreateSchemaAsync(notStreamingType, cancellationToken: cancellationToken);
             }
@@ -95,7 +98,7 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
     static async ValueTask<OpenApiResponses?> CreateResponses(OpenApiResponses? responses, IProducesSequenceResponseTypeMetadata[] sequenceMetadata, OpenApiOperationTransformerContext context, OpenApiSpecVersion openApiVersion, CancellationToken cancellationToken)
     {
         OpenApiSchema? schema = null;
-        foreach(var metadata in sequenceMetadata)
+        foreach (var metadata in sequenceMetadata)
         {
             if (!metadata.ContentTypes.Any()) continue;
             if (metadata.ItemType is null) continue;
@@ -115,7 +118,9 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
             else if (response2 is OpenApiResponse response3)
             {
                 response = response3;
-            } else {
+            }
+            else
+            {
                 response = new OpenApiResponse
                 {
                     Content = response2.Content,
@@ -125,7 +130,7 @@ public class SequenceOpenApiTransformer: IOpenApiOperationTransformer
                     Links = response2.Links,
                 };
             }
-            foreach(var contentType_ in metadata.ContentTypes)
+            foreach (var contentType_ in metadata.ContentTypes)
             {
                 var contentType = contentType_.ContentType;
                 var isStreaming = contentType_.IsStreaming;

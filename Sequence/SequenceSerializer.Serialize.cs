@@ -51,7 +51,7 @@ public static partial class SequenceSerializer
                 await writer.WriteAsync(end, cancellationToken);
         }
         await writer.FlushAsync(cancellationToken);
-    }   
+    }
 #else
     public static async Task SerializeAsync<T>(PipeWriter writer, IAsyncEnumerable<T> enumerable, JsonTypeInfo<T> jsonTypeInfo, ISequenceSerializerWriteOptions options, CancellationToken cancellationToken = default)
     {

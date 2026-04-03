@@ -1,4 +1,8 @@
-﻿using Juner.AspNetCore.Sequence.Internals;
+﻿using System.Diagnostics;
+using System.Text.Json;
+
+using Juner.AspNetCore.Sequence.Internals;
+using Juner.Sequence;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
@@ -6,11 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-
-using System.Diagnostics;
-using System.Text.Json;
-
-using Juner.Sequence;
 
 #if !NET8_0_OR_GREATER
 using System.Text.Json.Serialization.Metadata;
@@ -21,8 +20,8 @@ namespace Juner.AspNetCore.Sequence.Http.HttpResults;
 [DebuggerDisplay("{Values,nq}")]
 public partial class SequenceResult<T> : IResult
 {
-    ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<SequenceResult<T>>>() ?? (ILogger)NullLogger.Instance;
-    JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
+    static ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<SequenceResult<T>>>() ?? (ILogger)NullLogger.Instance;
+    static JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
     {
         var jsonOptions = provider.GetService<IOptions<JsonOptions>>()?.Value;
         if (jsonOptions is null)
@@ -45,7 +44,9 @@ public partial class SequenceResult<T> : IResult
             _contentType,
             out var contentType,
             out var options))
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("not select type");
+
+        LogSelectType(logger, contentType, options);
 
         httpContext.Response.ContentType = contentType;
 
@@ -77,5 +78,9 @@ public partial class SequenceResult<T> : IResult
             options,
             httpContext.RequestAborted);
     }
-
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "switch contentType:{contentType} options:{options}"
+    )]
+    static partial void LogSelectType(ILogger logger, string contentType, ISequenceSerializerWriteOptions options);
 }
