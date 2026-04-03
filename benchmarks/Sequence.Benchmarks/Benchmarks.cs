@@ -11,9 +11,9 @@ using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
-using static Juner.Sequence.Benchmarks.Settings;
-
 using Juner.Sequence.Extensions;
+
+using static Juner.Sequence.Benchmarks.Settings;
 
 namespace Juner.Sequence.Benchmarks;
 
