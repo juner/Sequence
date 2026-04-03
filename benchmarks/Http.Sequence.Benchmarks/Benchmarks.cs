@@ -12,6 +12,8 @@ using BenchmarkDotNet.Running;
 using Juner.Sequence;
 using Juner.Sequence.Extensions;
 
+using static Juner.Http.Sequence.Benchmarks.Settings;
+
 namespace Juner.Http.Sequence.Benchmarks;
 
 [
@@ -73,7 +75,7 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         using var nd = new MemoryStream();
         SequenceSerializer.SerializeAsync(
             nd,
-            Enumerable.Range(0, 100_000)
+            Enumerable.Range(0, COUNT)
                 .Select(i => new MyType { Id = i, Name = $"Item {i}" })
                 .ToAsyncEnumerable(),
             MyJsonContext.Default.MyType,
@@ -82,7 +84,7 @@ public class FakeHttpMessageHandler : HttpMessageHandler
 
         // JSON array
         _jsonArray = JsonSerializer.SerializeToUtf8Bytes(
-            Enumerable.Range(0, 100_000)
+            Enumerable.Range(0, COUNT)
                 .Select(i => new MyType { Id = i, Name = $"Item {i}" })
                 .ToArray(),
             MyJsonContext.Default.MyTypeArray);
@@ -179,7 +181,7 @@ public class JunerMarkdownExporter : IExporter
         using var sw = new StringWriter();
         var logger = new AccumulationLogger();
 
-        sw.WriteLine("""
+        sw.WriteLine($"""
         # Juner.Http.Sequence Benchmarks
 
         **Purpose:** Measure HTTP client-side streaming performance using Juner.Http.Sequence.
@@ -191,39 +193,43 @@ public class JunerMarkdownExporter : IExporter
         - **JSON Sequence** (`0x1E` framed JSON)
 
         All benchmarks use `FakeHttpMessageHandler` to eliminate network overhead and measure pure client-side parsing performance.
+
+        - **Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}
+        - **OS:** {summary.HostEnvironmentInfo.Os}
+
+        ## Results
+
         """);
-        sw.WriteLine();
-
-        sw.WriteLine($"- **Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}");
-        sw.WriteLine($"- **OS:** {summary.HostEnvironmentInfo.Os}");
-        sw.WriteLine();
-
-        sw.WriteLine("## Results");
-        sw.WriteLine();
 
         MarkdownExporter.GitHub.ExportToLog(summary, logger);
-        sw.Write(logger.GetLog());
-        sw.WriteLine();
+        sw.WriteLine(logger.GetLog());
 
-        sw.WriteLine("## Reproduction");
-        sw.WriteLine();
-        sw.WriteLine("Run the benchmark project:");
-        sw.WriteLine();
-        sw.WriteLine("```bash");
-        sw.WriteLine("dotnet run -f net10.0 -c Release -- --launchCount 1");
-        sw.WriteLine("```");
-        sw.WriteLine();
-        sw.WriteLine("BenchmarkDotNet builds separate executables for each target runtime. ");
-        sw.WriteLine("The benchmark project targets multiple TFMs to enable cross-runtime comparison.");
-        sw.WriteLine();
-        sw.WriteLine("Note: You can run any target framework (net7.0, net8.0, net9.0, net10.0).");
-        sw.WriteLine("BenchmarkDotNet will automatically build and execute all configured jobs.");
-        sw.WriteLine();
-        sw.WriteLine("---");
-        sw.WriteLine();
-        sw.WriteLine("## Notes");
-        sw.WriteLine();
-        sw.WriteLine("This benchmark is intended to show **relative performance characteristics**, not absolute throughput numbers.  Different machines will produce different absolute timings,  but the relationships between methods remain consistent.");
+        sw.WriteLine($"""
+        ## Reproduction
+
+        Run the benchmark project:
+
+        ```bash
+        dotnet run -f net10.0 -c Release -- --launchCount 1
+        ```
+
+        BenchmarkDotNet builds separate executables for each target runtime.
+        The benchmark project targets multiple TFMs to enable cross-runtime comparison.
+
+        Note: You can run any target framework ({string.Join(", ", summary.Reports.Select(v => v.BenchmarkCase.Job.Environment.Runtime?.Name).OfType<string>().Distinct())}).
+        BenchmarkDotNet will automatically build and execute all configured jobs.
+
+        ---
+
+        ## Notes
+
+        This benchmark is intended to show **relative performance characteristics**, not absolute throughput numbers.  Different machines will produce different absolute timings,  but the relationships between methods remain consistent.
+        """);
         return sw.ToString();
     }
+}
+
+file static class Settings
+{
+    public const int COUNT = 100_000;
 }

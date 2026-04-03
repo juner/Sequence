@@ -18,7 +18,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using static Juner.AspNetCore.Sequence.Benchmarks.Settings;
+
 namespace Juner.AspNetCore.Sequence.Benchmarks;
+
 
 [
     SimpleJob(RuntimeMoniker.Net10_0),
@@ -48,19 +51,20 @@ public class MinimalApiStreamingBenchmarks
                     app.UseEndpoints(endpoint =>
                     {
 
-                        endpoint.MapGet("/ndjson", () => TypedResults.JsonLine(GetItems()));
+                        endpoint.MapGet("/ndjson", () => TypedResults.JsonLine(MinimalApiStreamingBenchmarks.GetItems()));
 
-                        endpoint.MapGet("/json-stream", () => TypedResults.Json(GetItems(), MyJsonContext.Default.Options));
-                        endpoint.MapGet("/json-array", async (HttpContext ctx, CancellationToken cancellationToken)
+                        endpoint.MapGet("/json-stream", () => TypedResults.Json(MinimalApiStreamingBenchmarks.GetItems(), MyJsonContext.Default.Options));
+                        endpoint.MapGet("/json-array", async (CancellationToken cancellationToken)
                             => TypedResults.Json(
 #if NET8_0_OR_GREATER
-                            await GetItems().ToListAsync(cancellationToken),
+                            await MinimalApiStreamingBenchmarks.GetItems().ToListAsync(cancellationToken),
 #else
-                            await ToListAsync(GetItems(), cancellationToken),
+                            await ToListAsync(MinimalApiStreamingBenchmarks.GetItems(), cancellationToken),
 #endif
                             MyJsonContext.Default.Options
                             )
                         );
+                        endpoint.MapGet("/json-enumerable-sync", () => TypedResults.Json(MinimalApiStreamingBenchmarks.GetItemsSync()));
                     });
                 });
             })
@@ -84,13 +88,34 @@ public class MinimalApiStreamingBenchmarks
         }
     }
 #endif
-    private async IAsyncEnumerable<MyType> GetItems()
+
+    /// <summary>
+    /// {COUNT} items を返す IAsyncEnumerable を生成する。実際のシナリオでは、これがデータベースクエリや外部 API 呼び出しなどになる可能性がある。
+    /// </summary>
+    /// <returns></returns>
+    private static async IAsyncEnumerable<MyType> GetItems()
     {
-        for (var i = 0; i < 100_000; i++)
+        for (var i = 0; i < COUNT; i++)
         {
             yield return new MyType { Id = i, Name = $"Item {i}" };
             await Task.Yield();
         }
+    }
+
+    /// <summary>
+    /// GetItems() を同期的に列挙するためのヘルパー。これにより、JSON シーケンスが完全に生成される前に最初のバイトが返されるかどうかをテストできる。
+    /// </summary>
+    /// <returns></returns>
+    private static IEnumerable<MyType> GetItemsSync()
+    {
+        var asyncEnumerater = GetItems().GetAsyncEnumerator();
+        do
+        {
+            var moveNext = asyncEnumerater.MoveNextAsync().AsTask().Result;
+            if (!moveNext) yield break;
+            if (asyncEnumerater.Current is not null)
+                yield return asyncEnumerater.Current;
+        } while (true);
     }
 
     // ------------------------------------------------------------
@@ -145,6 +170,7 @@ public class MinimalApiStreamingBenchmarks
         using var reader = new StreamReader(stream);
         _ = await reader.ReadToEndAsync();
     }
+
     // ------------------------------------------------------------
     // 5. JSON array — first-byte latency（ほぼ常に遅い）
     // ------------------------------------------------------------
@@ -178,6 +204,32 @@ public class MinimalApiStreamingBenchmarks
         throw new NotSupportedException("JSON stream full response latency benchmark requires .NET 8.0 or greater.");
 #endif
     }
+
+    // ------------------------------------------------------------
+    // 7. JSON enumerable — first-byte latency
+    // ------------------------------------------------------------
+    [Benchmark]
+    public async Task JsonEnumerable_FirstByte()
+    {
+        var response = await _client.GetAsync("/json-enumerable-sync", HttpCompletionOption.ResponseHeadersRead);
+        using var stream = await response.Content.ReadAsStreamAsync();
+
+        // JSON array は最初の 1 バイトが返るまで遅い
+        _ = stream.ReadByte();
+    }
+
+    // ------------------------------------------------------------
+    // 8. JSON enumerable — full response latency
+    // ------------------------------------------------------------
+    [Benchmark]
+    public async Task JsonEnumerable_Full()
+    {
+        var response = await _client.GetAsync("/json-enumerable-sync", HttpCompletionOption.ResponseHeadersRead);
+        using var stream = await response.Content.ReadAsStreamAsync();
+
+        using var reader = new StreamReader(stream);
+        _ = await reader.ReadToEndAsync();
+    }
 }
 
 public class MyType
@@ -190,6 +242,7 @@ public class MyType
 [JsonSerializable(typeof(MyType[]))]
 [JsonSerializable(typeof(List<MyType>))]
 [JsonSerializable(typeof(IAsyncEnumerable<MyType>))]
+[JsonSerializable(typeof(IEnumerable<MyType>))]
 public partial class MyJsonContext : JsonSerializerContext { }
 
 public class Program
@@ -226,46 +279,80 @@ public class JunerMarkdownExporter : IExporter
     {
         using var sw = new StringWriter();
         var logger = new AccumulationLogger();
+        sw.WriteLine($"""
+        # Juner.AspNetCore.Sequence Benchmarks
 
-        sw.WriteLine("# Juner.AspNetCore.Sequence Benchmarks");
-        sw.WriteLine();
-        sw.WriteLine("**Dataset:** 100,000 items of `MyType` (Id + Name)");
-        sw.WriteLine("**Format:** ");
-        sw.WriteLine(" - NDJSON (full streaming)");
-        sw.WriteLine(" - JSON array (buffered)");
-        sw.WriteLine(" - JSON array (IAsyncEnumerable streaming)");
-        sw.WriteLine("**Purpose:** Compare Juner.Http.Sequence streaming with STJ's JSON array streaming.");
-        sw.WriteLine();
-        sw.WriteLine($"**Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}");
-        sw.WriteLine($"**OS:** {summary.HostEnvironmentInfo.Os}");
-        sw.WriteLine();
+        - **Dataset:** {COUNT:#,#} items of `MyType` (Id + Name)
+        - **Format:** 
+           - NDJSON (full streaming)
+           - JSON array (buffered)
+           - JSON array (IAsyncEnumerable streaming)
+           - JSON array (IEnumerable streaming)
+        - **Purpose:** Compare Juner.AspNetCore.Sequence streaming with STJ's JSON array streaming in a minimal API scenario.
 
-        sw.WriteLine("## Results");
-        sw.WriteLine();
+        **Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}
+        **OS:** {summary.HostEnvironmentInfo.Os}
+
+        ## Results
+        """);
 
         MarkdownExporter.GitHub.ExportToLog(summary, logger);
-        sw.Write(logger.GetLog());
-        sw.WriteLine();
+        sw.WriteLine(logger.GetLog());
 
-        sw.WriteLine("## Reproduction");
-        sw.WriteLine();
-        sw.WriteLine("Run the benchmark project:");
-        sw.WriteLine();
-        sw.WriteLine("```bash");
-        sw.WriteLine("dotnet run -f net10.0 -c Release -- --launchCount 1");
-        sw.WriteLine("```");
-        sw.WriteLine();
-        sw.WriteLine("BenchmarkDotNet builds separate executables for each target runtime. ");
-        sw.WriteLine("The benchmark project targets multiple TFMs to enable cross-runtime comparison.");
-        sw.WriteLine();
-        sw.WriteLine("Note: You can run any target framework (net7.0, net8.0, net9.0, net10.0).");
-        sw.WriteLine("BenchmarkDotNet will automatically build and execute all configured jobs.");
-        sw.WriteLine();
-        sw.WriteLine("---");
-        sw.WriteLine();
-        sw.WriteLine("## Notes");
-        sw.WriteLine();
-        sw.WriteLine("This benchmark is intended to show **relative performance characteristics**, not absolute throughput numbers.  Different machines will produce different absolute timings,  but the relationships between methods remain consistent.");
+        sw.WriteLine($"""
+        ### Method definitions
+
+        - **{nameof(MinimalApiStreamingBenchmarks.NdJson_FirstByte)}** — Time until the first NDJSON line is received.
+        - **{nameof(MinimalApiStreamingBenchmarks.NdJson_Full)}** — Time to read the entire NDJSON response.
+        - **{nameof(MinimalApiStreamingBenchmarks.JsonArray_FirstByte)}** — Time until the first byte of a *buffered* JSON array is received.
+        - **{nameof(MinimalApiStreamingBenchmarks.JsonArray_Full)}** — Time to read the entire buffered JSON array.
+        - **{nameof(MinimalApiStreamingBenchmarks.JsonStream_FirstByte)}** — First-byte latency of JSON array *streaming* using `IAsyncEnumerable<T>`.
+        - **{nameof(MinimalApiStreamingBenchmarks.JsonStream_Full)}** — Full response latency of JSON array streaming using `IAsyncEnumerable<T>`.
+        - **{nameof(MinimalApiStreamingBenchmarks.JsonEnumerable_FirstByte)}** — First-byte latency when returning `IEnumerable<T>` produced by synchronously consuming an `IAsyncEnumerable<T>`.
+        - **{nameof(MinimalApiStreamingBenchmarks.JsonEnumerable_Full)}** — Full response latency when returning `IEnumerable<T>` produced by synchronously consuming an `IAsyncEnumerable<T>`.
+
+        ### About IEnumerable<T> results
+
+        `JsonEnumerable_*` does **not** represent a JSON array materialized in memory.
+
+        Instead, it represents an `IEnumerable<T>` that is produced by synchronously
+        blocking on an underlying `IAsyncEnumerable<T>` (`MoveNextAsync().Result`).
+
+        ASP.NET Core treats synchronous enumeration as **non-streaming**, and therefore
+        does not flush until the entire JSON array is written. As a result, the response
+        behaves like a fully buffered JSON array, even though the data is not buffered
+        in memory as a list.
+
+        ### About .NET 7 results
+
+        .NET 7 does not support JsonSerializer for `IAsyncEnumerable<T>` and `IEnumerable<T>`.  
+        Therefore, `JsonStream_*` and `JsonEnumerable_*` benchmarks are reported as `NA`.
+
+        ## Reproduction
+
+        Run the benchmark project:
+
+        ```bash
+        dotnet run -f net10.0 -c Release -- --launchCount 1
+        ```
+
+        BenchmarkDotNet builds separate executables for each target runtime. 
+        The benchmark project targets multiple TFMs to enable cross-runtime comparison.
+
+        Note: You can run any target framework ({string.Join(", ", summary.Reports.Select(v => v.BenchmarkCase.Job.Environment.Runtime?.Name).OfType<string>().Distinct())}).
+        BenchmarkDotNet will automatically build and execute all configured jobs.
+
+        ---
+
+        ## Notes
+
+        This benchmark is intended to show **relative performance characteristics**, not absolute throughput numbers.  Different machines will produce different absolute timings,  but the relationships between methods remain consistent.
+        """);
         return sw.ToString();
     }
+}
+
+file static class Settings
+{
+    public const int COUNT = 100_000;
 }

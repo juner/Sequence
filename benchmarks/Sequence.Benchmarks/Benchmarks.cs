@@ -11,6 +11,8 @@ using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
+using static Juner.Sequence.Benchmarks.Settings;
+
 using Juner.Sequence.Extensions;
 
 namespace Juner.Sequence.Benchmarks;
@@ -29,7 +31,7 @@ public class StreamingBenchmarks
 
     public StreamingBenchmarks()
     {
-        _arrayData = [.. Enumerable.Range(0, 100_000).Select(i => new MyType { Id = i, Name = $"Item {i}" })];
+        _arrayData = [.. Enumerable.Range(0, COUNT).Select(i => new MyType { Id = i, Name = $"Item {i}" })];
 
         _streamData = GetStreamData();
     }
@@ -270,43 +272,48 @@ public class JunerMarkdownExporter : IExporter
         using var sw = new StringWriter();
         var logger = new AccumulationLogger();
 
-        sw.WriteLine("# Juner.Sequence Benchmarks");
-        sw.WriteLine();
-        sw.WriteLine("**Dataset:** 100,000 items of `MyType` (Id + Name)");
-        sw.WriteLine("**Format:** NDJSON (streaming) vs JSON array (buffered)");
-        sw.WriteLine("**Purpose:** Compare Juner.Sequence NDJSON streaming with System.Text.Json JSON array serialization/deserialization.");
-        sw.WriteLine();
-        sw.WriteLine($"**Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}");
-        sw.WriteLine($"**OS:** {summary.HostEnvironmentInfo.Os}");
-        sw.WriteLine();
+        sw.WriteLine($"""
+        # Juner.Sequence Benchmarks
 
-        sw.WriteLine("## Results");
-        sw.WriteLine();
+        - **Dataset:** {COUNT:#,#} items of `MyType` (Id + Name)
+        - **Format:** NDJSON (streaming) vs JSON array (buffered)
+        - **Purpose:** Compare Juner.Sequence NDJSON streaming with System.Text.Json JSON array serialization/deserialization.
+
+        - **Runtime:** {summary.HostEnvironmentInfo.RuntimeVersion}
+        - **OS:** {summary.HostEnvironmentInfo.Os}
+
+        ## Results
+
+        """);
 
         MarkdownExporter.GitHub.ExportToLog(summary, logger);
-        sw.Write(logger.GetLog());
-        sw.WriteLine();
+        sw.WriteLine(logger.GetLog());
 
-        sw.WriteLine("## Reproduction");
-        sw.WriteLine();
-        sw.WriteLine("Run the benchmark project:");
-        sw.WriteLine();
-        sw.WriteLine("```bash");
-        sw.WriteLine("dotnet run -f net10.0 -c Release -- --launchCount 1");
-        sw.WriteLine("```");
-        sw.WriteLine();
-        sw.WriteLine("BenchmarkDotNet builds separate executables for each target runtime. ");
-        sw.WriteLine("The benchmark project targets multiple TFMs to enable cross-runtime comparison.");
-        sw.WriteLine();
-        sw.WriteLine("Note: You can run any target framework (net7.0, net8.0, net9.0, net10.0).");
-        sw.WriteLine("BenchmarkDotNet will automatically build and execute all configured jobs.");
-        sw.WriteLine();
-        sw.WriteLine("---");
-        sw.WriteLine();
-        sw.WriteLine("## Notes");
-        sw.WriteLine();
-        sw.WriteLine("This benchmark is intended to show **relative performance characteristics**, not absolute throughput numbers.  Different machines will produce different absolute timings,  but the relationships between methods remain consistent.");
+        sw.WriteLine($"""
+        ## Reproduction
 
+        Run the benchmark project:
+        ```bash
+        dotnet run -f net10.0 -c Release -- --launchCount 1
+        ```
+
+        BenchmarkDotNet builds separate executables for each target runtime.
+        The benchmark project targets multiple TFMs to enable cross-runtime comparison.
+
+        Note: You can run any target framework ({string.Join(", ", summary.Reports.Select(v => v.BenchmarkCase.Job.Environment.Runtime?.Name).OfType<string>().Distinct())}).
+        BenchmarkDotNet will automatically build and execute all configured jobs.
+
+        ---
+
+        ## Notes
+
+        This benchmark is intended to show **relative performance characteristics**, not absolute throughput numbers.  Different machines will produce different absolute timings,  but the relationships between methods remain consistent.
+        """);
         return sw.ToString();
     }
+}
+
+file static class Settings
+{
+    public const int COUNT = 100_000;
 }
