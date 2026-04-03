@@ -23,12 +23,8 @@ public partial class Sequence<T> : IBindableFromHttpContext<Sequence<T>>
 {
     #region static BindAsync
 
-    static ILogger GetLogger(IServiceProvider provider)
-    {
-        var logger = provider.GetService<ILogger<Sequence<T>>>();
-        if (logger is not null) return logger;
-        return NullLogger.Instance;
-    }
+    static ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<Sequence<T>>>() ?? (ILogger)NullLogger.Instance;
+
     static JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
     {
         var jsonOptions = provider.GetService<IOptions<JsonOptions>>()?.Value;
