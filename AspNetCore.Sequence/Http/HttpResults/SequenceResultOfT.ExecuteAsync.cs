@@ -21,8 +21,8 @@ namespace Juner.AspNetCore.Sequence.Http.HttpResults;
 [DebuggerDisplay("{Values,nq}")]
 public partial class SequenceResult<T> : IResult
 {
-    ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<SequenceResult<T>>>() ?? (ILogger)NullLogger.Instance;
-    JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
+    static ILogger GetLogger(IServiceProvider provider) => provider.GetService<ILogger<SequenceResult<T>>>() ?? (ILogger)NullLogger.Instance;
+    static JsonSerializerOptions GetOptions(IServiceProvider provider, ILogger logger)
     {
         var jsonOptions = provider.GetService<IOptions<JsonOptions>>()?.Value;
         if (jsonOptions is null)
