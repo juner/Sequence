@@ -52,9 +52,9 @@ public class HttpSequenceBenchmarks
     {
         var response = await _client.GetAsync("http://localhost/json-array");
 
-        await foreach (var _ in JsonSerializer.DeserializeAsyncEnumerable<MyType>(
+        await foreach (var _ in JsonSerializer.DeserializeAsyncEnumerable(
             await response.Content.ReadAsStreamAsync(),
-            MyJsonContext.Default.Options))
+            MyJsonContext.Default.MyType))
         {
             // consume
         }
