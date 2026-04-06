@@ -1,11 +1,9 @@
 ﻿using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
@@ -40,7 +38,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 1. Juner.Sequence — NDJSON streaming
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "01. NDJSON streaming")]
+    [BenchmarkCategory("Juner.Sequence", "Serialize", "NDJSON")]
     public async Task Serialize_NdJson_Streaming()
     {
         await using var stream = new MemoryStream();
@@ -55,7 +54,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 2. System.Text.Json — JSON array (non-streaming)
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "02. JSON array (non-streaming)")]
+    [BenchmarkCategory("System.Text.Json", "Serialize", "JSONArray")]
     public void Serialize_JsonArray()
     {
         using var stream = new MemoryStream();
@@ -68,7 +68,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 3. Baseline — pure IAsyncEnumerable iteration
     // ------------------------------------------------------------
-    [Benchmark(Baseline = true)]
+    [Benchmark(Baseline = true, Description = "03. pure IAsyncEnumerable iteration")]
+    [BenchmarkCategory("Baseline")]
     public async Task Iterate_IAsyncEnumerable()
     {
         await foreach (var _ in _streamData)
@@ -79,7 +80,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 4. Juner.Sequence — NDJSON streaming (PipeWriter)
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "4. NDJSON streaming (PipeWriter)")]
+    [BenchmarkCategory("Juner.Sequence", "Serialize", "NDJSON")]
     public async Task Serialize_NdJson_PipeWriter_Streaming()
     {
         await using var stream = new MemoryStream();
@@ -95,7 +97,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 5. Juner.Sequence — NDJSON Deserialize (Stream)
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "05. NDJSON Deserialize (Stream)")]
+    [BenchmarkCategory("Juner.Sequence","Deserialize", "NDJSON")]
     public async Task Deserialize_NdJson_Streaming()
     {
         // Prepare NDJSON payload
@@ -120,7 +123,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 6. Juner.Sequence — NDJSON Deserialize (PipeReader)
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "06. NDJSON Deserialize (PipeReader)")]
+    [BenchmarkCategory("Juner.Sequence", "Deserialize", "NDJSON")]
     public async Task Deserialize_NdJson_PipeReader_Streaming()
     {
         // Prepare NDJSON payload
@@ -149,7 +153,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 7. System.Text.Json — JSON array Deserialize (non-streaming)
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "07. JSON array Deserialize (non-streaming)")]
+    [BenchmarkCategory("System.Text.Json", "Deserialize", "JSONArray")]
     public void Deserialize_JsonArray()
     {
         // Prepare JSON array payload
@@ -169,7 +174,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 8. Baseline — Convert IAsyncEnumerable to array
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "08. Convert IAsyncEnumerable to array")]
+    [BenchmarkCategory("Baseline")]
     public async Task Deserialize_Iterate_ToArray()
     {
         var list = new List<MyType>();
@@ -182,7 +188,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 9. System.Text.Json — SerializeAsync (JSON array)
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "09. SerializeAsync (JSON array)")]
+    [BenchmarkCategory("System.Text.Json", "Serialize", "JSONArray")]
     public async Task Serialize_JsonArray_Async()
     {
         await using var stream = new MemoryStream();
@@ -195,7 +202,8 @@ public class StreamingBenchmarks
     // ------------------------------------------------------------
     // 10. System.Text.Json — DeserializeAsyncEnumerable (JSON array)
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "10. DeserializeAsyncEnumerable (JSON array)")]
+    [BenchmarkCategory("System.Text.Json", "Deserialize", "JSONArray")]
     public async Task Deserialize_JsonArray_AsyncEnumerable()
     {
         // Prepare JSON array payload
