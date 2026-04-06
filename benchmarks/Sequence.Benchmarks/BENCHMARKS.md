@@ -1,114 +1,81 @@
 # Juner.Sequence Benchmarks
 
-This document contains the full BenchmarkDotNet output for Juner.Sequence.
+- **Dataset:** 100,000 items of `MyType`
+- **Formats:** NDJSON / JSON array
+- **Purpose:** Compare Juner.Sequence streaming vs System.Text.Json buffered JSON.
 
-- Machine: **Intel Core i7‑1065G7 (Surface Book 3)**  
-- Dataset: **100,000 items of `MyType`**  
-- Formats: **NDJSON (streaming)**, **JSON Array (buffered)**, **baseline iteration**  
-- Runtimes: **.NET 7 / 8 / 9 / 10**  
-- Tool: **BenchmarkDotNet v0.15.8**  
+- **Runtime:** .NET 10.0.5 (10.0.5, 10.0.526.15411)
+- **OS:** Windows 11 (10.0.26200.8117/25H2/2025Update/HudsonValley2)
 
----
-
-## Summary (All Runtimes)
+## Results
 
 ```
-BenchmarkDotNet v0.15.8, Windows 11 (10.0.28020.1743)
-Intel Core i7-1065G7 CPU 1.30GHz (Max: 1.50GHz), 1 CPU, 8 logical and 4 physical cores
+
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26200.8117/25H2/2025Update/HudsonValley2)
+Intel Core i5-9400 CPU 2.90GHz (Coffee Lake), 1 CPU, 6 logical and 6 physical cores
 .NET SDK 10.0.201
-  [Host]     : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v4
-  Job-EWEUQJ : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v4
-  Job-QSKNUG : .NET 7.0.20 (7.0.20, 7.0.2024.26716), X64 RyuJIT x86-64-v3
-  Job-LZJQCX : .NET 8.0.24 (8.0.24, 8.0.2426.7010), X64 RyuJIT x86-64-v4
-  Job-LEIXTY : .NET 9.0.13 (9.0.13, 9.0.1326.6317), X64 RyuJIT x86-64-v4
+  [Host]    : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v3
+  .NET 10.0 : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v3
+  .NET 7.0  : .NET 7.0.20 (7.0.20, 7.0.2024.26716), X64 RyuJIT x86-64-v3
+  .NET 8.0  : .NET 8.0.25 (8.0.25, 8.0.2526.11203), X64 RyuJIT x86-64-v3
+  .NET 9.0  : .NET 9.0.14 (9.0.14, 9.0.1426.11910), X64 RyuJIT x86-64-v3
 
-LaunchCount = 10
+LaunchCount=1  
+
 ```
-
----
-
-## Full Results Table
-
-> The following table is the raw BenchmarkDotNet output.  
-> No values have been modified.
-
-| Method                                  | Runtime   | Mean      | Error    | StdDev    | Median    | P95       | Ratio | RatioSD | Gen0      | Gen1      | Gen2      | Allocated  | Alloc Ratio |
-|---------------------------------------- |---------- |----------:|---------:|----------:|----------:|----------:|------:|--------:|----------:|----------:|----------:|-----------:|------------:|
-| Serialize_NdJson_Streaming              | .NET 10.0 | 102.32 ms | 2.481 ms | 18.173 ms | 105.21 ms | 136.07 ms |  2.46 |    0.44 | 2000.0000 | 1000.0000 | 1000.0000 | 14043200 B |   48,761.11 |
-| Serialize_JsonArray                     | .NET 10.0 |  13.23 ms | 0.318 ms |  2.401 ms |  12.56 ms |  18.13 ms |  0.32 |    0.06 |  734.3750 |  718.7500 |  718.7500 |  7540582 B |   26,182.58 |
-| Iterate_IAsyncEnumerable                | .NET 10.0 |  41.71 ms | 0.334 ms |  1.526 ms |  41.39 ms |  44.58 ms |  1.00 |    0.05 |         - |         - |         - |      288 B |        1.00 |
-| Serialize_NdJson_PipeWriter_Streaming   | .NET 10.0 | 152.29 ms | 1.188 ms |  4.924 ms | 152.77 ms | 159.62 ms |  3.66 |    0.18 |         - |         - |         - |  8389656 B |   29,130.75 |
-| Deserialize_NdJson_Streaming            | .NET 10.0 | 197.32 ms | 3.886 ms | 32.882 ms | 193.47 ms | 258.26 ms |  4.74 |    0.81 | 4000.0000 | 1000.0000 | 1000.0000 | 21974792 B |   76,301.36 |
-| Deserialize_NdJson_PipeReader_Streaming | .NET 10.0 | 193.92 ms | 3.673 ms | 32.563 ms | 189.55 ms | 253.16 ms |  4.65 |    0.80 | 4000.0000 | 1000.0000 | 1000.0000 | 21981368 B |   76,324.19 |
-| Deserialize_JsonArray                   | .NET 10.0 |  64.13 ms | 1.835 ms | 17.282 ms |  58.11 ms | 102.53 ms |  1.54 |    0.42 | 2000.0000 | 1500.0000 | 1000.0000 | 18362384 B |   63,758.28 |
-| Deserialize_Iterate_ToArray             | .NET 10.0 |  44.42 ms | 0.443 ms |  1.995 ms |  44.19 ms |  48.00 ms |  1.07 |    0.06 |  181.8182 |  181.8182 |  181.8182 |  2097941 B |    7,284.52 |
-| Serialize_JsonArray_Async               | .NET 10.0 |  13.82 ms | 0.272 ms |  2.396 ms |  13.15 ms |  19.15 ms |  0.33 |    0.06 |  718.7500 |  703.1250 |  703.1250 |  7540757 B |   26,183.18 |
-| Deserialize_JsonArray_AsyncEnumerable   | .NET 10.0 |  38.39 ms | 0.343 ms |  2.350 ms |  37.64 ms |  43.17 ms |  0.92 |    0.07 | 2750.0000 | 1000.0000 | 1000.0000 | 15481870 B |   53,756.49 |
-|                                         |           |           |          |           |           |           |       |         |           |           |           |            |             |
-| Serialize_NdJson_Streaming              | .NET 7.0  |  90.13 ms | 3.317 ms | 21.385 ms |  83.54 ms | 160.12 ms |  1.20 |    0.29 | 1571.4286 |  857.1429 |  857.1429 | 11607039 B |   36,272.00 |
-| Serialize_JsonArray                     | .NET 7.0  |  18.78 ms | 0.153 ms |  0.604 ms |  18.65 ms |  19.78 ms |  0.25 |    0.01 |  750.0000 |  750.0000 |  750.0000 |  7540522 B |   23,564.13 |
-| Iterate_IAsyncEnumerable                | .NET 7.0  |  75.03 ms | 0.341 ms |  1.227 ms |  75.06 ms |  77.00 ms |  1.00 |    0.02 |         - |         - |         - |      320 B |        1.00 |
-| Serialize_NdJson_PipeWriter_Streaming   | .NET 7.0  |  92.84 ms | 0.811 ms |  6.830 ms |  91.16 ms | 105.66 ms |  1.24 |    0.09 | 1500.0000 |  833.3333 |  833.3333 | 11602279 B |   36,257.12 |
-| Deserialize_NdJson_Streaming            | .NET 7.0  | 155.36 ms | 1.779 ms | 11.482 ms | 150.72 ms | 179.07 ms |  2.07 |    0.16 | 3500.0000 | 1000.0000 | 1000.0000 | 19538120 B |   61,056.62 |
-| Deserialize_NdJson_PipeReader_Streaming | .NET 7.0  | 149.29 ms | 1.187 ms |  7.118 ms | 147.88 ms | 164.28 ms |  1.99 |    0.10 | 3000.0000 | 1000.0000 | 1000.0000 | 19534872 B |   61,046.47 |
-| Deserialize_JsonArray                   | .NET 7.0  |  70.52 ms | 2.446 ms | 11.400 ms |  66.32 ms |  98.18 ms |  0.94 |    0.15 | 2250.0000 | 2125.0000 | 1000.0000 | 18361234 B |   57,378.86 |
-| Deserialize_Iterate_ToArray             | .NET 7.0  |  76.51 ms | 0.478 ms |  2.601 ms |  76.52 ms |  80.69 ms |  1.02 |    0.04 |  142.8571 |  142.8571 |  142.8571 |  2097950 B |    6,556.09 |
-| Serialize_JsonArray_Async               | .NET 7.0  |  22.54 ms | 1.024 ms |  4.606 ms |  19.20 ms |  29.80 ms |  0.30 |    0.06 |  750.0000 |  750.0000 |  750.0000 |  7540522 B |   23,564.13 |
-| Deserialize_JsonArray_AsyncEnumerable   | .NET 7.0  |  67.91 ms | 0.384 ms |  1.453 ms |  67.70 ms |  70.42 ms |  0.91 |    0.02 | 2875.0000 | 1125.0000 | 1000.0000 | 15482039 B |   48,381.37 |
-|                                         |           |           |          |           |           |           |       |         |           |           |           |            |             |
-| Serialize_NdJson_Streaming              | .NET 8.0  |  66.03 ms | 0.794 ms |  4.022 ms |  64.90 ms |  74.55 ms |  1.09 |    0.07 | 1625.0000 |  875.0000 |  875.0000 | 11604654 B |   40,293.94 |
-| Serialize_JsonArray                     | .NET 8.0  |  16.51 ms | 0.401 ms |  1.804 ms |  16.00 ms |  20.30 ms |  0.27 |    0.03 |  765.6250 |  750.0000 |  750.0000 |  7540521 B |   26,182.36 |
-| Iterate_IAsyncEnumerable                | .NET 8.0  |  60.41 ms | 0.426 ms |  1.549 ms |  60.65 ms |  62.38 ms |  1.00 |    0.04 |         - |         - |         - |      288 B |        1.00 |
-| Serialize_NdJson_PipeWriter_Streaming   | .NET 8.0  |  80.10 ms | 0.662 ms |  3.060 ms |  79.95 ms |  85.67 ms |  1.33 |    0.06 | 1000.0000 |  500.0000 |  500.0000 | 11602224 B |   40,285.50 |
-| Deserialize_NdJson_Streaming            | .NET 8.0  | 139.14 ms | 0.738 ms |  2.729 ms | 138.82 ms | 143.72 ms |  2.30 |    0.07 | 3000.0000 | 1000.0000 | 1000.0000 | 19536704 B |   67,835.78 |
-| Deserialize_NdJson_PipeReader_Streaming | .NET 8.0  | 129.92 ms | 0.703 ms |  2.574 ms | 129.44 ms | 134.61 ms |  2.15 |    0.07 | 3500.0000 | 1000.0000 | 1000.0000 | 19535448 B |   67,831.42 |
-| Deserialize_JsonArray                   | .NET 8.0  |  60.31 ms | 0.398 ms |  2.542 ms |  60.27 ms |  64.70 ms |  1.00 |    0.05 | 2300.0000 | 2200.0000 | 1000.0000 | 18361846 B |   63,756.41 |
-| Deserialize_Iterate_ToArray             | .NET 8.0  |  62.97 ms | 0.601 ms |  2.437 ms |  63.09 ms |  66.71 ms |  1.04 |    0.05 |  250.0000 |  250.0000 |  250.0000 |  2097982 B |    7,284.66 |
-| Serialize_JsonArray_Async               | .NET 8.0  |  16.59 ms | 0.211 ms |  1.003 ms |  16.60 ms |  18.13 ms |  0.27 |    0.02 |  750.0000 |  750.0000 |  750.0000 |  7540522 B |   26,182.37 |
-| Deserialize_JsonArray_AsyncEnumerable   | .NET 8.0  |  60.66 ms | 0.509 ms |  1.999 ms |  60.27 ms |  64.73 ms |  1.00 |    0.04 | 2888.8889 | 1000.0000 | 1000.0000 | 15479810 B |   53,749.34 |
-|                                         |           |           |          |           |           |           |       |         |           |           |           |            |             |
-| Serialize_NdJson_Streaming              | .NET 9.0  |  79.61 ms | 0.753 ms |  4.336 ms |  79.25 ms |  88.32 ms |  1.22 |    0.08 | 2000.0000 | 1000.0000 | 1000.0000 | 13203972 B |   45,847.12 |
-| Serialize_JsonArray                     | .NET 9.0  |  14.99 ms | 0.118 ms |  0.585 ms |  14.93 ms |  16.07 ms |  0.23 |    0.01 |  750.0000 |  750.0000 |  750.0000 |  7540798 B |   26,183.33 |
-| Iterate_IAsyncEnumerable                | .NET 9.0  |  65.21 ms | 0.563 ms |  2.480 ms |  65.20 ms |  68.91 ms |  1.00 |    0.05 |         - |         - |         - |      288 B |        1.00 |
-| Serialize_NdJson_PipeWriter_Streaming   | .NET 9.0  |  89.44 ms | 2.650 ms | 15.429 ms |  83.48 ms | 131.31 ms |  1.37 |    0.24 |  500.0000 |  500.0000 |  500.0000 |  8390280 B |   29,132.92 |
-| Deserialize_NdJson_Streaming            | .NET 9.0  | 150.47 ms | 1.058 ms |  6.040 ms | 149.94 ms | 161.03 ms |  2.31 |    0.13 | 4000.0000 | 1000.0000 | 1000.0000 | 21154600 B |   73,453.47 |
-| Deserialize_NdJson_PipeReader_Streaming | .NET 9.0  | 146.52 ms | 1.110 ms |  6.349 ms | 145.86 ms | 157.25 ms |  2.25 |    0.13 | 4000.0000 | 1000.0000 | 1000.0000 | 21157736 B |   73,464.36 |
-| Deserialize_JsonArray                   | .NET 9.0  |  59.70 ms | 0.485 ms |  4.203 ms |  59.95 ms |  66.72 ms |  0.92 |    0.07 | 2200.0000 | 2000.0000 | 1000.0000 | 18362304 B |   63,758.00 |
-| Deserialize_Iterate_ToArray             | .NET 9.0  |  62.59 ms | 0.591 ms |  2.169 ms |  62.30 ms |  67.51 ms |  0.96 |    0.05 |  250.0000 |  250.0000 |  250.0000 |  2097982 B |    7,284.66 |
-| Serialize_JsonArray_Async               | .NET 9.0  |  14.10 ms | 0.250 ms |  1.117 ms |  13.93 ms |  16.50 ms |  0.22 |    0.02 |  765.6250 |  750.0000 |  750.0000 |  7540798 B |   26,183.33 |
-| Deserialize_JsonArray_AsyncEnumerable   | .NET 9.0  |  52.46 ms | 1.512 ms |  7.119 ms |  50.34 ms |  68.74 ms |  0.81 |    0.11 | 2666.6667 | 1000.0000 | 1000.0000 | 15481104 B |   53,753.83 |
-
----
-
-## Interpretation
-
-- **NDJSON streaming** = enumeration cost + write cost  
-- **JSON array** is fastest due to single-buffer writes  
-- All runtimes improve from **.NET 7 → 10**  
-- Memory usage scales with output size (expected for JSON serialization)  
-- PipeWriter/PipeReader paths show different characteristics depending on CPU TDP  
-
----
+| Method                                        | Job       | Runtime   | Mean      | Error    | StdDev   | Median    | Ratio | RatioSD | Gen0      | Gen1      | Gen2      | Allocated  | Alloc Ratio |
+|---------------------------------------------- |---------- |---------- |----------:|---------:|---------:|----------:|------:|--------:|----------:|----------:|----------:|-----------:|------------:|
+| &#39;03. pure IAsyncEnumerable iteration&#39;         | .NET 10.0 | .NET 10.0 |  33.60 ms | 1.268 ms | 3.739 ms |  33.88 ms |  0.67 |    0.08 |         - |         - |         - |      288 B |        0.90 |
+| &#39;08. Convert IAsyncEnumerable to array&#39;       | .NET 10.0 | .NET 10.0 |  37.21 ms | 1.294 ms | 3.814 ms |  37.46 ms |  0.74 |    0.08 |  250.0000 |  250.0000 |  250.0000 |  2097982 B |    6,556.19 |
+| &#39;03. pure IAsyncEnumerable iteration&#39;         | .NET 7.0  | .NET 7.0  |  50.09 ms | 0.989 ms | 1.016 ms |  50.02 ms |  1.00 |    0.03 |         - |         - |         - |      320 B |        1.00 |
+| &#39;08. Convert IAsyncEnumerable to array&#39;       | .NET 7.0  | .NET 7.0  |  49.95 ms | 0.820 ms | 0.727 ms |  50.12 ms |  1.00 |    0.02 |  181.8182 |  181.8182 |  181.8182 |  2097973 B |    6,556.17 |
+| &#39;03. pure IAsyncEnumerable iteration&#39;         | .NET 8.0  | .NET 8.0  |  45.09 ms | 1.294 ms | 3.816 ms |  45.20 ms |  0.90 |    0.08 |         - |         - |         - |      288 B |        0.90 |
+| &#39;08. Convert IAsyncEnumerable to array&#39;       | .NET 8.0  | .NET 8.0  |  49.14 ms | 1.100 ms | 3.244 ms |  50.33 ms |  0.98 |    0.07 |  200.0000 |  200.0000 |  200.0000 |  2097952 B |    6,556.10 |
+| &#39;03. pure IAsyncEnumerable iteration&#39;         | .NET 9.0  | .NET 9.0  |  42.70 ms | 1.151 ms | 3.394 ms |  42.83 ms |  0.85 |    0.07 |         - |         - |         - |      288 B |        0.90 |
+| &#39;08. Convert IAsyncEnumerable to array&#39;       | .NET 9.0  | .NET 9.0  |  47.33 ms | 1.405 ms | 4.141 ms |  48.34 ms |  0.95 |    0.08 |  250.0000 |  250.0000 |  250.0000 |  2097982 B |    6,556.19 |
+| &#39;05. NDJSON Deserialize (Stream)&#39;             | .NET 10.0 | .NET 10.0 |  96.00 ms | 1.216 ms | 1.078 ms |  95.90 ms |  1.92 |    0.04 | 3000.0000 | 1000.0000 | 1000.0000 | 21948800 B |   68,590.00 |
+| &#39;06. NDJSON Deserialize (PipeReader)&#39;         | .NET 10.0 | .NET 10.0 |  94.64 ms | 1.179 ms | 1.045 ms |  94.84 ms |  1.89 |    0.04 | 3000.0000 | 1000.0000 | 1000.0000 | 21951136 B |   68,597.30 |
+| &#39;05. NDJSON Deserialize (Stream)&#39;             | .NET 7.0  | .NET 7.0  | 141.46 ms | 1.698 ms | 1.506 ms | 140.86 ms |  2.83 |    0.06 | 3000.0000 | 1000.0000 | 1000.0000 | 19533296 B |   61,041.55 |
+| &#39;06. NDJSON Deserialize (PipeReader)&#39;         | .NET 7.0  | .NET 7.0  | 136.37 ms | 0.840 ms | 0.701 ms | 136.56 ms |  2.72 |    0.06 | 3000.0000 | 1000.0000 | 1000.0000 | 19550856 B |   61,096.43 |
+| &#39;05. NDJSON Deserialize (Stream)&#39;             | .NET 8.0  | .NET 8.0  | 124.69 ms | 1.339 ms | 1.187 ms | 124.54 ms |  2.49 |    0.05 | 3000.0000 | 1000.0000 | 1000.0000 | 19537096 B |   61,053.43 |
+| &#39;06. NDJSON Deserialize (PipeReader)&#39;         | .NET 8.0  | .NET 8.0  | 119.90 ms | 0.741 ms | 0.657 ms | 120.03 ms |  2.39 |    0.05 | 3000.0000 | 1000.0000 | 1000.0000 | 19538492 B |   61,057.79 |
+| &#39;05. NDJSON Deserialize (Stream)&#39;             | .NET 9.0  | .NET 9.0  | 111.01 ms | 1.902 ms | 1.686 ms | 110.50 ms |  2.22 |    0.05 | 3500.0000 | 1000.0000 | 1000.0000 | 21145240 B |   66,078.88 |
+| &#39;06. NDJSON Deserialize (PipeReader)&#39;         | .NET 9.0  | .NET 9.0  | 107.99 ms | 1.754 ms | 1.555 ms | 107.81 ms |  2.16 |    0.05 | 3000.0000 | 1000.0000 | 1000.0000 | 21143832 B |   66,074.48 |
+| &#39;01. NDJSON Serialize (Stream)&#39;               | .NET 10.0 | .NET 10.0 |  53.27 ms | 0.951 ms | 0.889 ms |  53.26 ms |  1.06 |    0.03 | 2200.0000 | 1000.0000 | 1000.0000 | 14016879 B |   43,802.75 |
+| &#39;04. NDJSON Serialize (PipeWriter)&#39;           | .NET 10.0 | .NET 10.0 |  59.78 ms | 0.821 ms | 0.768 ms |  59.68 ms |  1.19 |    0.03 |  888.8889 |  888.8889 |  888.8889 |  8390765 B |   26,221.14 |
+| &#39;01. NDJSON Serialize (Stream)&#39;               | .NET 7.0  | .NET 7.0  |  68.73 ms | 0.534 ms | 0.473 ms |  68.76 ms |  1.37 |    0.03 | 1250.0000 |  625.0000 |  625.0000 | 11597364 B |   36,241.76 |
+| &#39;04. NDJSON Serialize (PipeWriter)&#39;           | .NET 7.0  | .NET 7.0  |  79.08 ms | 1.305 ms | 1.090 ms |  78.72 ms |  1.58 |    0.04 | 1714.2857 | 1000.0000 | 1000.0000 | 11605672 B |   36,267.72 |
+| &#39;01. NDJSON Serialize (Stream)&#39;               | .NET 8.0  | .NET 8.0  |  60.62 ms | 0.538 ms | 0.504 ms |  60.68 ms |  1.21 |    0.03 | 1555.5556 |  888.8889 |  888.8889 | 11607512 B |   36,273.47 |
+| &#39;04. NDJSON Serialize (PipeWriter)&#39;           | .NET 8.0  | .NET 8.0  |  69.36 ms | 1.090 ms | 0.966 ms |  69.33 ms |  1.39 |    0.03 | 1500.0000 |  875.0000 |  875.0000 | 11600836 B |   36,252.61 |
+| &#39;01. NDJSON Serialize (Stream)&#39;               | .NET 9.0  | .NET 9.0  |  57.99 ms | 1.076 ms | 1.007 ms |  57.95 ms |  1.16 |    0.03 | 1888.8889 |  888.8889 |  888.8889 | 13208146 B |   41,275.46 |
+| &#39;04. NDJSON Serialize (PipeWriter)&#39;           | .NET 9.0  | .NET 9.0  |  64.45 ms | 0.850 ms | 0.795 ms |  64.29 ms |  1.29 |    0.03 |  875.0000 |  875.0000 |  875.0000 |  8390748 B |   26,221.09 |
+| &#39;07. JSON array Deserialize (non-streaming)&#39;  | .NET 10.0 | .NET 10.0 |  49.64 ms | 0.971 ms | 1.750 ms |  49.27 ms |  0.99 |    0.04 | 2272.7273 | 2000.0000 | 1000.0000 | 18362916 B |   57,384.11 |
+| &#39;10. DeserializeAsyncEnumerable (JSON array)&#39; | .NET 10.0 | .NET 10.0 |  37.02 ms | 0.466 ms | 0.413 ms |  36.93 ms |  0.74 |    0.02 | 2642.8571 | 1071.4286 | 1000.0000 | 15480897 B |   48,377.80 |
+| &#39;07. JSON array Deserialize (non-streaming)&#39;  | .NET 7.0  | .NET 7.0  |  63.56 ms | 0.766 ms | 0.717 ms |  63.35 ms |  1.27 |    0.03 | 2250.0000 | 2125.0000 | 1000.0000 | 18362152 B |   57,381.72 |
+| &#39;10. DeserializeAsyncEnumerable (JSON array)&#39; | .NET 7.0  | .NET 7.0  |  64.81 ms | 0.786 ms | 0.735 ms |  64.62 ms |  1.29 |    0.03 | 2625.0000 | 1250.0000 | 1000.0000 | 15480045 B |   48,375.14 |
+| &#39;07. JSON array Deserialize (non-streaming)&#39;  | .NET 8.0  | .NET 8.0  |  56.50 ms | 1.127 ms | 2.198 ms |  56.16 ms |  1.13 |    0.05 | 2250.0000 | 2125.0000 | 1000.0000 | 18361342 B |   57,379.19 |
+| &#39;10. DeserializeAsyncEnumerable (JSON array)&#39; | .NET 8.0  | .NET 8.0  |  51.29 ms | 0.375 ms | 0.313 ms |  51.34 ms |  1.02 |    0.02 | 2700.0000 | 1200.0000 | 1000.0000 | 15479830 B |   48,374.47 |
+| &#39;07. JSON array Deserialize (non-streaming)&#39;  | .NET 9.0  | .NET 9.0  |  53.59 ms | 1.067 ms | 2.364 ms |  53.50 ms |  1.07 |    0.05 | 2300.0000 | 2200.0000 | 1000.0000 | 18361873 B |   57,380.85 |
+| &#39;10. DeserializeAsyncEnumerable (JSON array)&#39; | .NET 9.0  | .NET 9.0  |  41.88 ms | 0.297 ms | 0.263 ms |  41.84 ms |  0.84 |    0.02 | 2666.6667 | 1166.6667 | 1000.0000 | 15483610 B |   48,386.28 |
+| &#39;02. JSON array Serialize (non-streaming)&#39;    | .NET 10.0 | .NET 10.0 |  11.19 ms | 0.121 ms | 0.107 ms |  11.21 ms |  0.22 |    0.00 |  750.0000 |  734.3750 |  734.3750 |  7540597 B |   23,564.37 |
+| &#39;09. SerializeAsync (JSON array)&#39;             | .NET 10.0 | .NET 10.0 |  11.70 ms | 0.175 ms | 0.155 ms |  11.62 ms |  0.23 |    0.01 |  765.6250 |  750.0000 |  750.0000 |  7540810 B |   23,565.03 |
+| &#39;02. JSON array Serialize (non-streaming)&#39;    | .NET 7.0  | .NET 7.0  |  17.66 ms | 0.212 ms | 0.188 ms |  17.63 ms |  0.35 |    0.01 |  750.0000 |  750.0000 |  750.0000 |  7540522 B |   23,564.13 |
+| &#39;09. SerializeAsync (JSON array)&#39;             | .NET 7.0  | .NET 7.0  |  18.04 ms | 0.135 ms | 0.112 ms |  18.04 ms |  0.36 |    0.01 |  750.0000 |  750.0000 |  750.0000 |  7540522 B |   23,564.13 |
+| &#39;02. JSON array Serialize (non-streaming)&#39;    | .NET 8.0  | .NET 8.0  |  14.42 ms | 0.073 ms | 0.064 ms |  14.41 ms |  0.29 |    0.01 |  765.6250 |  750.0000 |  750.0000 |  7540522 B |   23,564.13 |
+| &#39;09. SerializeAsync (JSON array)&#39;             | .NET 8.0  | .NET 8.0  |  14.74 ms | 0.133 ms | 0.124 ms |  14.69 ms |  0.29 |    0.01 |  765.6250 |  750.0000 |  750.0000 |  7540522 B |   23,564.13 |
+| &#39;02. JSON array Serialize (non-streaming)&#39;    | .NET 9.0  | .NET 9.0  |  13.18 ms | 0.251 ms | 0.235 ms |  13.16 ms |  0.26 |    0.01 |  765.6250 |  750.0000 |  750.0000 |  7540798 B |   23,564.99 |
+| &#39;09. SerializeAsync (JSON array)&#39;             | .NET 9.0  | .NET 9.0  |  13.17 ms | 0.100 ms | 0.084 ms |  13.18 ms |  0.26 |    0.01 |  765.6250 |  750.0000 |  750.0000 |  7540798 B |   23,564.99 |
 
 ## Reproduction
 
-Run the benchmark project:
-
 ```bash
-dotnet run -f net10.0 -c Release -- --launchCount 3
+dotnet run -f net10.0 -c Release -- -r net7.0 net8.0 net9.0 net10.0 --launchCount 1 --memory
 ```
 
-BenchmarkDotNet builds separate executables for each target runtime.  
-The benchmark project targets multiple TFMs to enable cross-runtime comparison.
-
-Note: You can run any target framework (net7.0, net8.0, net9.0, net10.0).  
-BenchmarkDotNet will automatically build and execute all configured jobs.
+BenchmarkDotNet builds separate executables for each target runtime.
 
 ---
 
 ## Notes
 
-This benchmark is intended to show **relative performance characteristics**,  
-not absolute throughput numbers.  
-Different machines will produce different absolute timings,  
-but the relationships between methods remain consistent.
+This benchmark shows **relative performance**, not absolute throughput.
