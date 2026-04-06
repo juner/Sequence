@@ -112,7 +112,8 @@ public class Benchmarks
     // ------------------------------------------------------------
     // 1. NDJSON — first-byte latency
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "1. NDJSON — first-byte latency")]
+    [BenchmarkCategory(CATEGORY_NDJSON, FIRST_BYTE)]
     public async Task NdJson_FirstByte()
     {
         var response = await _client.GetAsync("/ndjson", HttpCompletionOption.ResponseHeadersRead);
@@ -126,7 +127,8 @@ public class Benchmarks
     // ------------------------------------------------------------
     // 2. NDJSON — full response latency
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "2. NDJSON — full response latency")]
+    [BenchmarkCategory(CATEGORY_NDJSON, FULL_BYTE)]
     public async Task NdJson_Full()
     {
         var response = await _client.GetAsync("/ndjson", HttpCompletionOption.ResponseHeadersRead);
@@ -137,9 +139,10 @@ public class Benchmarks
     }
 
     // ------------------------------------------------------------
-    // 3. JSON array — first-byte latency（ほぼ常に遅い）
+    // 3. JSON array — first-byte latency（buffered）
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "3. JSON array — first-byte latency（buffered）")]
+    [BenchmarkCategory(CATEGORY_JSON_ARRAY_BUFFERED, FIRST_BYTE)]
     public async Task JsonArray_FirstByte()
     {
         var response = await _client.GetAsync("/json-array", HttpCompletionOption.ResponseHeadersRead);
@@ -150,9 +153,10 @@ public class Benchmarks
     }
 
     // ------------------------------------------------------------
-    // 4. JSON array — full response latency
+    // 4. JSON array — full response latency（buffered）
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "4. JSON array — full response latency（buffered）")]
+    [BenchmarkCategory(CATEGORY_JSON_ARRAY_BUFFERED, FULL_BYTE)]
     public async Task JsonArray_Full()
     {
         var response = await _client.GetAsync("/json-array", HttpCompletionOption.ResponseHeadersRead);
@@ -163,9 +167,10 @@ public class Benchmarks
     }
 
     // ------------------------------------------------------------
-    // 5. JSON array — first-byte latency（ほぼ常に遅い）
+    // 5. JSON array — first-byte latency（IAsyncEnumerable streaming）
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "5. JSON array — first-byte latency（IAsyncEnumerable streaming）")]
+    [BenchmarkCategory(CATEGORY_JSON_ARRAY_STREAMING, FIRST_BYTE)]
     public async Task JsonStream_FirstByte()
     {
 #if NET8_0_OR_GREATER
@@ -180,9 +185,10 @@ public class Benchmarks
     }
 
     // ------------------------------------------------------------
-    // 6. JSON array — full response latency
+    // 6. JSON array — full response latency（IAsyncEnumerable streaming）
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "6. JSON array — full response latency（IAsyncEnumerable streaming）")]
+    [BenchmarkCategory(CATEGORY_JSON_ARRAY_STREAMING, FULL_BYTE)]
     public async Task JsonStream_Full()
     {
 #if NET8_0_OR_GREATER
@@ -197,9 +203,10 @@ public class Benchmarks
     }
 
     // ------------------------------------------------------------
-    // 7. JSON enumerable — first-byte latency
+    // 7. JSON enumerable — first-byte latency（sync enumeration）
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "7. JSON enumerable — first-byte latency（sync enumeration）")]
+    [BenchmarkCategory(CATEGORY_JSON_ENUMERABLE_SYNC, FIRST_BYTE)]
     public async Task JsonEnumerable_FirstByte()
     {
         var response = await _client.GetAsync("/json-enumerable-sync", HttpCompletionOption.ResponseHeadersRead);
@@ -210,9 +217,10 @@ public class Benchmarks
     }
 
     // ------------------------------------------------------------
-    // 8. JSON enumerable — full response latency
+    // 8. JSON enumerable — full response latency（sync enumeration）
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "8. JSON enumerable — full response latency（sync enumeration）")]
+    [BenchmarkCategory(CATEGORY_JSON_ENUMERABLE_SYNC, FULL_BYTE)]
     public async Task JsonEnumerable_Full()
     {
         var response = await _client.GetAsync("/json-enumerable-sync", HttpCompletionOption.ResponseHeadersRead);
@@ -302,6 +310,13 @@ public class JunerMarkdownExporter : IExporter
         - **{nameof(Benchmarks.JsonEnumerable_FirstByte)}** — First-byte latency when returning `IEnumerable<T>` produced by synchronously consuming an `IAsyncEnumerable<T>`.
         - **{nameof(Benchmarks.JsonEnumerable_Full)}** — Full response latency when returning `IEnumerable<T>` produced by synchronously consuming an `IAsyncEnumerable<T>`.
 
+        ### Benchmark categories
+
+        - **{CATEGORY_NDJSON}** — Fully streaming NDJSON output using Juner.AspNetCore.Sequence.
+        - **{CATEGORY_JSON_ARRAY_BUFFERED}** — Standard JSON array serialization (fully buffered).
+        - **{CATEGORY_JSON_ARRAY_STREAMING}** — JSON array streaming using `IAsyncEnumerable<T>`.
+        - **{CATEGORY_JSON_ENUMERABLE_SYNC}** — Synchronous enumeration of an `IAsyncEnumerable<T>` (non-streaming).
+
         ### About IEnumerable<T> results
 
         `JsonEnumerable_*` does **not** represent a JSON array materialized in memory.
@@ -346,4 +361,11 @@ public class JunerMarkdownExporter : IExporter
 file static class Settings
 {
     public const int COUNT = 100_000;
+
+    public const string CATEGORY_NDJSON = "NDJSON";
+    public const string CATEGORY_JSON_ARRAY_BUFFERED = "JsonArrayBuffered";
+    public const string CATEGORY_JSON_ARRAY_STREAMING = "JsonArrayStreaming";
+    public const string CATEGORY_JSON_ENUMERABLE_SYNC = "JsonEnumerableSync";
+    public const string FIRST_BYTE = "FirstByte";
+    public const string FULL_BYTE = "Full";
 }
