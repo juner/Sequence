@@ -15,6 +15,7 @@ using static Juner.Sequence.Benchmarks.Settings;
 
 namespace Juner.Sequence.Benchmarks;
 
+[CategoriesColumn]
 public class Benchmarks
 {
     private readonly MyType[] _arrayData;

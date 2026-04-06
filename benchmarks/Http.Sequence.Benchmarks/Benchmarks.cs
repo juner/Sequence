@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
@@ -16,11 +15,11 @@ using static Juner.Http.Sequence.Benchmarks.Settings;
 
 namespace Juner.Http.Sequence.Benchmarks;
 
-public class HttpSequenceBenchmarks
+public class Benchmarks
 {
     private readonly HttpClient _client;
 
-    public HttpSequenceBenchmarks() => _client = new HttpClient(new FakeHttpMessageHandler());
+    public Benchmarks() => _client = new HttpClient(new FakeHttpMessageHandler());
 
     // ------------------------------------------------------------
     // 1. Juner.Http.Sequence — DeserializeAsyncEnumerable
@@ -144,7 +143,7 @@ public class Program
         var config = DefaultConfig.Instance
             .AddExporter(new JunerMarkdownExporter());
 
-        BenchmarkRunner.Run<HttpSequenceBenchmarks>(config, args);
+        BenchmarkRunner.Run<Benchmarks>(config, args);
     }
 }
 

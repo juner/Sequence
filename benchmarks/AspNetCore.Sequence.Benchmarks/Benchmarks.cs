@@ -3,7 +3,6 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
@@ -22,11 +21,11 @@ using static Juner.AspNetCore.Sequence.Benchmarks.Settings;
 
 namespace Juner.AspNetCore.Sequence.Benchmarks;
 
-public class MinimalApiStreamingBenchmarks
+public class Benchmarks
 {
     private readonly HttpClient _client;
 
-    public MinimalApiStreamingBenchmarks()
+    public Benchmarks()
     {
         var host = new HostBuilder()
             .ConfigureServices(services =>
@@ -43,20 +42,20 @@ public class MinimalApiStreamingBenchmarks
                     app.UseEndpoints(endpoint =>
                     {
 
-                        endpoint.MapGet("/ndjson", () => TypedResults.JsonLine(MinimalApiStreamingBenchmarks.GetItems()));
+                        endpoint.MapGet("/ndjson", () => TypedResults.JsonLine(Benchmarks.GetItems()));
 
-                        endpoint.MapGet("/json-stream", () => TypedResults.Json(MinimalApiStreamingBenchmarks.GetItems(), MyJsonContext.Default.Options));
+                        endpoint.MapGet("/json-stream", () => TypedResults.Json(Benchmarks.GetItems(), MyJsonContext.Default.Options));
                         endpoint.MapGet("/json-array", async (CancellationToken cancellationToken)
                             => TypedResults.Json(
 #if NET8_0_OR_GREATER
-                            await MinimalApiStreamingBenchmarks.GetItems().ToListAsync(cancellationToken),
+                            await Benchmarks.GetItems().ToListAsync(cancellationToken),
 #else
-                            await ToListAsync(MinimalApiStreamingBenchmarks.GetItems(), cancellationToken),
+                            await ToListAsync(Benchmarks.GetItems(), cancellationToken),
 #endif
                             MyJsonContext.Default.Options
                             )
                         );
-                        endpoint.MapGet("/json-enumerable-sync", () => TypedResults.Json(MinimalApiStreamingBenchmarks.GetItemsSync()));
+                        endpoint.MapGet("/json-enumerable-sync", () => TypedResults.Json(Benchmarks.GetItemsSync()));
                     });
                 });
             })
@@ -243,7 +242,7 @@ public class Program
     {
         var config = DefaultConfig.Instance
             .AddExporter(new JunerMarkdownExporter());
-        BenchmarkRunner.Run<MinimalApiStreamingBenchmarks>(config, args: args);
+        BenchmarkRunner.Run<Benchmarks>(config, args: args);
     }
 }
 
@@ -294,14 +293,14 @@ public class JunerMarkdownExporter : IExporter
         sw.WriteLine($"""
         ### Method definitions
 
-        - **{nameof(MinimalApiStreamingBenchmarks.NdJson_FirstByte)}** — Time until the first NDJSON line is received.
-        - **{nameof(MinimalApiStreamingBenchmarks.NdJson_Full)}** — Time to read the entire NDJSON response.
-        - **{nameof(MinimalApiStreamingBenchmarks.JsonArray_FirstByte)}** — Time until the first byte of a *buffered* JSON array is received.
-        - **{nameof(MinimalApiStreamingBenchmarks.JsonArray_Full)}** — Time to read the entire buffered JSON array.
-        - **{nameof(MinimalApiStreamingBenchmarks.JsonStream_FirstByte)}** — First-byte latency of JSON array *streaming* using `IAsyncEnumerable<T>`.
-        - **{nameof(MinimalApiStreamingBenchmarks.JsonStream_Full)}** — Full response latency of JSON array streaming using `IAsyncEnumerable<T>`.
-        - **{nameof(MinimalApiStreamingBenchmarks.JsonEnumerable_FirstByte)}** — First-byte latency when returning `IEnumerable<T>` produced by synchronously consuming an `IAsyncEnumerable<T>`.
-        - **{nameof(MinimalApiStreamingBenchmarks.JsonEnumerable_Full)}** — Full response latency when returning `IEnumerable<T>` produced by synchronously consuming an `IAsyncEnumerable<T>`.
+        - **{nameof(Benchmarks.NdJson_FirstByte)}** — Time until the first NDJSON line is received.
+        - **{nameof(Benchmarks.NdJson_Full)}** — Time to read the entire NDJSON response.
+        - **{nameof(Benchmarks.JsonArray_FirstByte)}** — Time until the first byte of a *buffered* JSON array is received.
+        - **{nameof(Benchmarks.JsonArray_Full)}** — Time to read the entire buffered JSON array.
+        - **{nameof(Benchmarks.JsonStream_FirstByte)}** — First-byte latency of JSON array *streaming* using `IAsyncEnumerable<T>`.
+        - **{nameof(Benchmarks.JsonStream_Full)}** — Full response latency of JSON array streaming using `IAsyncEnumerable<T>`.
+        - **{nameof(Benchmarks.JsonEnumerable_FirstByte)}** — First-byte latency when returning `IEnumerable<T>` produced by synchronously consuming an `IAsyncEnumerable<T>`.
+        - **{nameof(Benchmarks.JsonEnumerable_Full)}** — Full response latency when returning `IEnumerable<T>` produced by synchronously consuming an `IAsyncEnumerable<T>`.
 
         ### About IEnumerable<T> results
 
