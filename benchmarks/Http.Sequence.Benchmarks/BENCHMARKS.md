@@ -11,54 +11,57 @@ This benchmark focuses on how fast an `HttpClient` can consume streaming JSON fo
 All benchmarks use `FakeHttpMessageHandler` to eliminate network overhead and measure pure client-side parsing performance.
 
 - **Runtime:** .NET 10.0.5 (10.0.5, 10.0.526.15411)
-- **OS:** Windows 11 (10.0.26200.8116/25H2/2025Update/HudsonValley2)
+- **OS:** Windows 11 (10.0.28020.1803)
 
 ## Results
 
 ```
 
-BenchmarkDotNet v0.15.8, Windows 11 (10.0.26200.8116/25H2/2025Update/HudsonValley2)
-Intel Core i5-9400 CPU 2.90GHz (Coffee Lake), 1 CPU, 6 logical and 6 physical cores
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.28020.1803)
+Intel Core i7-1065G7 CPU 1.30GHz (Max: 1.50GHz), 1 CPU, 8 logical and 4 physical cores
 .NET SDK 10.0.201
-  [Host]    : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v3
-  .NET 10.0 : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v3
+  [Host]    : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v4
+  .NET 10.0 : .NET 10.0.5 (10.0.5, 10.0.526.15411), X64 RyuJIT x86-64-v4
   .NET 7.0  : .NET 7.0.20 (7.0.20, 7.0.2024.26716), X64 RyuJIT x86-64-v3
-  .NET 8.0  : .NET 8.0.25 (8.0.25, 8.0.2526.11203), X64 RyuJIT x86-64-v3
-  .NET 9.0  : .NET 9.0.14 (9.0.14, 9.0.1426.11910), X64 RyuJIT x86-64-v3
+  .NET 8.0  : .NET 8.0.24 (8.0.24, 8.0.2426.7010), X64 RyuJIT x86-64-v4
+  .NET 9.0  : .NET 9.0.13 (9.0.13, 9.0.1326.6317), X64 RyuJIT x86-64-v4
 
 LaunchCount=1  
 
 ```
-| Method                          | Job       | Runtime   | Mean     | Error    | StdDev   | Gen0      | Gen1     | Gen2     | Allocated |
-|-------------------------------- |---------- |---------- |---------:|---------:|---------:|----------:|---------:|---------:|----------:|
-| Deserialize_NdJson_HttpSequence | .NET 10.0 | .NET 10.0 | 44.50 ms | 0.557 ms | 0.521 ms | 1916.6667 | 250.0000 | 250.0000 |   10.7 MB |
-| Deserialize_JsonArray_STJ       | .NET 10.0 | .NET 10.0 | 27.03 ms | 0.516 ms | 0.458 ms | 2031.2500 | 531.2500 | 343.7500 |   10.7 MB |
-| Deserialize_NdJson_HttpSequence | .NET 7.0  | .NET 7.0  | 69.43 ms | 0.636 ms | 0.564 ms | 1625.0000 |        - |        - |   10.7 MB |
-| Deserialize_JsonArray_STJ       | .NET 7.0  | .NET 7.0  | 47.04 ms | 0.480 ms | 0.449 ms | 1818.1818 | 272.7273 | 181.8182 |   10.7 MB |
-| Deserialize_NdJson_HttpSequence | .NET 8.0  | .NET 8.0  | 60.04 ms | 0.706 ms | 0.590 ms | 1666.6667 |        - |        - |   10.7 MB |
-| Deserialize_JsonArray_STJ       | .NET 8.0  | .NET 8.0  | 37.08 ms | 0.610 ms | 0.570 ms | 1928.5714 | 428.5714 | 285.7143 |   10.7 MB |
-| Deserialize_NdJson_HttpSequence | .NET 9.0  | .NET 9.0  | 51.01 ms | 0.539 ms | 0.504 ms | 1800.0000 | 200.0000 | 200.0000 |   10.7 MB |
-| Deserialize_JsonArray_STJ       | .NET 9.0  | .NET 9.0  | 30.12 ms | 0.405 ms | 0.359 ms | 2031.2500 | 562.5000 | 343.7500 |   10.7 MB |
+| Type                  | Method                                                       | Job       | Runtime   | Mean     | Error    | StdDev   | Ratio | RatioSD | Gen0      | Gen1     | Gen2     | Allocated | Alloc Ratio |
+|---------------------- |------------------------------------------------------------- |---------- |---------- |---------:|---------:|---------:|------:|--------:|----------:|---------:|---------:|----------:|------------:|
+| DeserializeBenchmarks | &#39;1. NDJSON streaming via Juner.Http.Sequence&#39;                | .NET 10.0 | .NET 10.0 | 42.04 ms | 0.419 ms | 0.327 ms |  0.58 |    0.01 | 1818.1818 |        - |        - |   10.7 MB |        1.00 |
+| DeserializeBenchmarks | &#39;1. NDJSON streaming via Juner.Http.Sequence&#39;                | .NET 7.0  | .NET 7.0  | 71.97 ms | 1.353 ms | 1.266 ms |  1.00 |    0.02 | 1857.1429 |        - |        - |   10.7 MB |        1.00 |
+| DeserializeBenchmarks | &#39;1. NDJSON streaming via Juner.Http.Sequence&#39;                | .NET 8.0  | .NET 8.0  | 61.40 ms | 0.556 ms | 0.493 ms |  0.85 |    0.02 | 1875.0000 |        - |        - |   10.7 MB |        1.00 |
+| DeserializeBenchmarks | &#39;1. NDJSON streaming via Juner.Http.Sequence&#39;                | .NET 9.0  | .NET 9.0  | 51.93 ms | 0.616 ms | 0.481 ms |  0.72 |    0.01 | 1800.0000 |        - |        - |   10.7 MB |        1.00 |
+|                       |                                                              |           |           |          |          |          |       |         |           |          |          |           |             |
+| ChunkedBenchmarks     | &#39;1. NDJSON streaming (chunked sender)&#39;                       | .NET 10.0 | .NET 10.0 | 45.69 ms | 0.787 ms | 0.736 ms |  0.60 |    0.01 | 1909.0909 |        - |        - |  11.07 MB |        0.69 |
+| ChunkedBenchmarks     | &#39;1. NDJSON streaming (chunked sender)&#39;                       | .NET 7.0  | .NET 7.0  | 76.75 ms | 1.119 ms | 0.992 ms |  1.00 |    0.02 | 2857.1429 | 857.1429 | 857.1429 |  15.99 MB |        1.00 |
+| ChunkedBenchmarks     | &#39;1. NDJSON streaming (chunked sender)&#39;                       | .NET 8.0  | .NET 8.0  | 67.63 ms | 1.203 ms | 1.943 ms |  0.88 |    0.03 | 2666.6667 | 666.6667 | 666.6667 |  15.94 MB |        1.00 |
+| ChunkedBenchmarks     | &#39;1. NDJSON streaming (chunked sender)&#39;                       | .NET 9.0  | .NET 9.0  | 57.04 ms | 1.106 ms | 1.358 ms |  0.74 |    0.02 | 2666.6667 | 666.6667 | 666.6667 |  15.95 MB |        1.00 |
+|                       |                                                              |           |           |          |          |          |       |         |           |          |          |           |             |
+| DeserializeBenchmarks | &#39;2. JSON array streaming via STJ.DeserializeAsyncEnumerable&#39; | .NET 10.0 | .NET 10.0 | 23.50 ms | 0.230 ms | 0.215 ms |  0.50 |    0.01 | 2000.0000 | 156.2500 | 125.0000 |   10.7 MB |        1.00 |
+| DeserializeBenchmarks | &#39;2. JSON array streaming via STJ.DeserializeAsyncEnumerable&#39; | .NET 7.0  | .NET 7.0  | 46.85 ms | 0.592 ms | 0.525 ms |  1.00 |    0.02 | 1818.1818 |        - |        - |   10.7 MB |        1.00 |
+| DeserializeBenchmarks | &#39;2. JSON array streaming via STJ.DeserializeAsyncEnumerable&#39; | .NET 8.0  | .NET 8.0  | 38.42 ms | 0.625 ms | 0.522 ms |  0.82 |    0.01 | 1846.1538 |  76.9231 |        - |   10.7 MB |        1.00 |
+| DeserializeBenchmarks | &#39;2. JSON array streaming via STJ.DeserializeAsyncEnumerable&#39; | .NET 9.0  | .NET 9.0  | 29.05 ms | 0.207 ms | 0.173 ms |  0.62 |    0.01 | 2000.0000 | 156.2500 | 125.0000 |   10.7 MB |        1.00 |
 
 ## Reproduction
 
 Run the benchmark project:
 
 ```bash
-dotnet run -f net10.0 -c Release -- --launchCount 3
+dotnet run -f net10.0 -c Release -- -r net7.0 net8.0 net9.0 net10.0 --launchCount 1 --memory
 ```
 
-BenchmarkDotNet builds separate executables for each target runtime.  
+BenchmarkDotNet builds separate executables for each target runtime.
 The benchmark project targets multiple TFMs to enable cross-runtime comparison.
 
-Note: You can run any target framework (net7.0, net8.0, net9.0, net10.0).  
+Note: You can run any target framework (.NET 10.0, .NET 7.0, .NET 8.0, .NET 9.0).
 BenchmarkDotNet will automatically build and execute all configured jobs.
 
 ---
 
 ## Notes
 
-This benchmark is intended to show **relative performance characteristics**,  
-not absolute throughput numbers.  
-Different machines will produce different absolute timings,  
-but the relationships between methods remain consistent.
+This benchmark is intended to show **relative performance characteristics**, not absolute throughput numbers.  Different machines will produce different absolute timings,  but the relationships between methods remain consistent.
