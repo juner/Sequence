@@ -25,7 +25,7 @@ public class HttpSequenceBenchmarks
     // ------------------------------------------------------------
     // 1. Juner.Http.Sequence — DeserializeAsyncEnumerable
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "NDJSON streaming via Juner.Http.Sequence")]
     public async Task Deserialize_NdJson_HttpSequence()
     {
         var response = await _client.GetAsync("http://localhost/ndjson");
@@ -40,7 +40,7 @@ public class HttpSequenceBenchmarks
     // ------------------------------------------------------------
     // 2. System.Text.Json — DeserializeAsyncEnumerable (JSON array)
     // ------------------------------------------------------------
-    [Benchmark]
+    [Benchmark(Description = "JSON array streaming via STJ.DeserializeAsyncEnumerable")]
     public async Task Deserialize_JsonArray_STJ()
     {
         var response = await _client.GetAsync("http://localhost/json-array");
@@ -203,7 +203,7 @@ public class JunerMarkdownExporter : IExporter
         Run the benchmark project:
 
         ```bash
-        dotnet run -f net10.0 -c Release -- -r net7.0 net8.0 net9.0 met10.0 --launchCount 1 --memory
+        dotnet run -f net10.0 -c Release -- -r net7.0 net8.0 net9.0 net10.0 --launchCount 1 --memory
         ```
 
         BenchmarkDotNet builds separate executables for each target runtime.
