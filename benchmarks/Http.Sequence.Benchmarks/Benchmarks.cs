@@ -16,13 +16,6 @@ using static Juner.Http.Sequence.Benchmarks.Settings;
 
 namespace Juner.Http.Sequence.Benchmarks;
 
-[
-    SimpleJob(RuntimeMoniker.Net10_0),
-    SimpleJob(RuntimeMoniker.Net90),
-    SimpleJob(RuntimeMoniker.Net80),
-    SimpleJob(RuntimeMoniker.Net70)
-]
-[MemoryDiagnoser]
 public class HttpSequenceBenchmarks
 {
     private readonly HttpClient _client;
@@ -210,7 +203,7 @@ public class JunerMarkdownExporter : IExporter
         Run the benchmark project:
 
         ```bash
-        dotnet run -f net10.0 -c Release -- --launchCount 1
+        dotnet run -f net10.0 -c Release -- -r net7.0 net8.0 net9.0 met10.0 --launchCount 1 --memory
         ```
 
         BenchmarkDotNet builds separate executables for each target runtime.

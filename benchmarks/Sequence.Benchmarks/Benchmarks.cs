@@ -16,13 +16,6 @@ using static Juner.Sequence.Benchmarks.Settings;
 
 namespace Juner.Sequence.Benchmarks;
 
-[
-    SimpleJob(RuntimeMoniker.Net10_0),
-    SimpleJob(RuntimeMoniker.Net90),
-    SimpleJob(RuntimeMoniker.Net80),
-    SimpleJob(RuntimeMoniker.Net70)
-]
-[MemoryDiagnoser,]
 public class StreamingBenchmarks
 {
     private readonly MyType[] _arrayData;
@@ -293,7 +286,7 @@ public class JunerMarkdownExporter : IExporter
 
         Run the benchmark project:
         ```bash
-        dotnet run -f net10.0 -c Release -- --launchCount 1
+        dotnet run -f net10.0 -c Release -- -r net7.0 net8.0 net9.0 net10.0 --launchCount 1 --memory
         ```
 
         BenchmarkDotNet builds separate executables for each target runtime.
