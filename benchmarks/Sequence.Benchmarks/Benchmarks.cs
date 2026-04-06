@@ -16,12 +16,12 @@ using static Juner.Sequence.Benchmarks.Settings;
 namespace Juner.Sequence.Benchmarks;
 
 [CategoriesColumn]
-public class Benchmarks
+public class BenchmarksSerialize
 {
     private readonly MyType[] _arrayData;
     private readonly IAsyncEnumerable<MyType> _streamData;
 
-    public Benchmarks()
+    public BenchmarksSerialize()
     {
         _arrayData = [.. Enumerable.Range(0, COUNT).Select(i => new MyType { Id = i, Name = $"Item {i}" })];
         _streamData = GetStreamData();
@@ -37,6 +37,16 @@ public class Benchmarks
     }
 
     // ------------------------------------------------------------
+    // 00. Baseline — pure IAsyncEnumerable iteration
+    // ------------------------------------------------------------
+    [Benchmark(Baseline = true, Description = "00. Baseline — pure IAsyncEnumerable iteration")]
+    [BenchmarkCategory("Baseline", "Serialize")]
+    public async Task Baseline_Serialize()
+    {
+        await foreach (var _ in _streamData) { }
+    }
+
+    // ------------------------------------------------------------
     // 01. NDJSON Serialize (Stream)
     // ------------------------------------------------------------
     [Benchmark(Description = "01. NDJSON Serialize (Stream)")]
@@ -45,10 +55,7 @@ public class Benchmarks
     {
         await using var stream = new MemoryStream();
         await SequenceSerializer.SerializeAsync(
-            stream,
-            _streamData,
-            MyJsonContext.Default.MyType,
-            SequenceSerializerOptions.JsonLines);
+            stream, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines);
     }
 
     // ------------------------------------------------------------
@@ -59,22 +66,7 @@ public class Benchmarks
     public void Serialize_JsonArray()
     {
         using var stream = new MemoryStream();
-        JsonSerializer.Serialize(
-            stream,
-            _arrayData,
-            MyJsonContext.Default.MyTypeArray);
-    }
-
-    // ------------------------------------------------------------
-    // 03. Baseline — pure IAsyncEnumerable iteration
-    // ------------------------------------------------------------
-    [Benchmark(Baseline = true, Description = "03. pure IAsyncEnumerable iteration")]
-    [BenchmarkCategory("Baseline", "Deserialize")]
-    public async Task Iterate_IAsyncEnumerable()
-    {
-        await foreach (var _ in _streamData)
-        {
-        }
+        JsonSerializer.Serialize(stream, _arrayData, MyJsonContext.Default.MyTypeArray);
     }
 
     // ------------------------------------------------------------
@@ -88,96 +80,7 @@ public class Benchmarks
         var writer = PipeWriter.Create(stream);
 
         await SequenceSerializer.SerializeAsync(
-            writer,
-            _streamData,
-            MyJsonContext.Default.MyType,
-            SequenceSerializerOptions.JsonLines);
-    }
-
-    // ------------------------------------------------------------
-    // 05. NDJSON Deserialize (Stream)
-    // ------------------------------------------------------------
-    [Benchmark(Description = "05. NDJSON Deserialize (Stream)")]
-    [BenchmarkCategory("Juner.Sequence", "Deserialize", "NDJSON")]
-    public async Task Deserialize_NdJson_Stream()
-    {
-        await using var buffer = new MemoryStream();
-        await SequenceSerializer.SerializeAsync(
-            buffer,
-            _streamData,
-            MyJsonContext.Default.MyType,
-            SequenceSerializerOptions.JsonLines);
-
-        buffer.Position = 0;
-
-        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
-            buffer,
-            MyJsonContext.Default.MyType,
-            SequenceSerializerOptions.JsonLines))
-        {
-        }
-    }
-
-    // ------------------------------------------------------------
-    // 06. NDJSON Deserialize (PipeReader)
-    // ------------------------------------------------------------
-    [Benchmark(Description = "06. NDJSON Deserialize (PipeReader)")]
-    [BenchmarkCategory("Juner.Sequence", "Deserialize", "NDJSON")]
-    public async Task Deserialize_NdJson_PipeReader()
-    {
-        await using var buffer = new MemoryStream();
-        await SequenceSerializer.SerializeAsync(
-            buffer,
-            _streamData,
-            MyJsonContext.Default.MyType,
-            SequenceSerializerOptions.JsonLines);
-
-        buffer.Position = 0;
-
-        var reader = PipeReader.Create(buffer);
-
-        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
-            reader,
-            MyJsonContext.Default.MyType,
-            SequenceSerializerOptions.JsonLines))
-        {
-        }
-
-        await reader.CompleteAsync();
-    }
-
-    // ------------------------------------------------------------
-    // 07. JSON array Deserialize (non-streaming)
-    // ------------------------------------------------------------
-    [Benchmark(Description = "07. JSON array Deserialize (non-streaming)")]
-    [BenchmarkCategory("System.Text.Json", "Deserialize", "JSONArray")]
-    public void Deserialize_JsonArray()
-    {
-        using var buffer = new MemoryStream();
-        JsonSerializer.Serialize(
-            buffer,
-            _arrayData,
-            MyJsonContext.Default.MyTypeArray);
-
-        buffer.Position = 0;
-
-        var _ = JsonSerializer.Deserialize(
-            buffer,
-            MyJsonContext.Default.MyTypeArray);
-    }
-
-    // ------------------------------------------------------------
-    // 08. Convert IAsyncEnumerable to array (Baseline)
-    // ------------------------------------------------------------
-    [Benchmark(Description = "08. Convert IAsyncEnumerable to array")]
-    [BenchmarkCategory("Baseline", "Deserialize")]
-    public async Task Deserialize_Iterate_ToArray()
-    {
-        var list = new List<MyType>();
-        await foreach (var item in _streamData)
-        {
-            list.Add(item);
-        }
+            writer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines);
     }
 
     // ------------------------------------------------------------
@@ -188,34 +91,150 @@ public class Benchmarks
     public async Task Serialize_JsonArray_Async()
     {
         await using var stream = new MemoryStream();
-        await JsonSerializer.SerializeAsync(
-            stream,
-            _arrayData,
-            MyJsonContext.Default.MyTypeArray);
+        await JsonSerializer.SerializeAsync(stream, _arrayData, MyJsonContext.Default.MyTypeArray);
+    }
+}
+
+[CategoriesColumn]
+public class BenchmarksDeserialize
+{
+    private readonly MyType[] _arrayData;
+    private readonly IAsyncEnumerable<MyType> _streamData;
+
+    public BenchmarksDeserialize()
+    {
+        _arrayData = [.. Enumerable.Range(0, COUNT).Select(i => new MyType { Id = i, Name = $"Item {i}" })];
+        _streamData = GetStreamData();
+    }
+
+    private async IAsyncEnumerable<MyType> GetStreamData()
+    {
+        foreach (var item in _arrayData)
+        {
+            yield return item;
+            await Task.Yield();
+        }
+    }
+
+    // ------------------------------------------------------------
+    // 00. Baseline — IAsyncEnumerable iteration → array
+    // ------------------------------------------------------------
+    [Benchmark(Baseline = true, Description = "00. Baseline — Convert IAsyncEnumerable to array")]
+    [BenchmarkCategory("Baseline", "Deserialize")]
+    public async Task Baseline_Deserialize()
+    {
+        var list = new List<MyType>();
+        await foreach (var item in _streamData) list.Add(item);
+    }
+
+    // ------------------------------------------------------------
+    // 07. JSON array Deserialize (non-streaming)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "07. JSON array Deserialize (non-streaming)")]
+    [BenchmarkCategory("System.Text.Json", "Deserialize", "JSONArray")]
+    public void Deserialize_JsonArray()
+    {
+        using var buffer = new MemoryStream();
+        JsonSerializer.Serialize(buffer, _arrayData, MyJsonContext.Default.MyTypeArray);
+
+        buffer.Position = 0;
+
+        var _ = JsonSerializer.Deserialize(buffer, MyJsonContext.Default.MyTypeArray);
+    }
+}
+
+[CategoriesColumn]
+public class BenchmarksDeserializeAsyncEnumerable
+{
+    private readonly MyType[] _arrayData;
+    private readonly IAsyncEnumerable<MyType> _streamData;
+
+    public BenchmarksDeserializeAsyncEnumerable()
+    {
+        _arrayData = [.. Enumerable.Range(0, COUNT).Select(i => new MyType { Id = i, Name = $"Item {i}" })];
+        _streamData = GetStreamData();
+    }
+
+    private async IAsyncEnumerable<MyType> GetStreamData()
+    {
+        foreach (var item in _arrayData)
+        {
+            yield return item;
+            await Task.Yield();
+        }
+    }
+
+    // ------------------------------------------------------------
+    // 00. Baseline — JSON array Deserialize (non-streaming)
+    // ------------------------------------------------------------
+    [Benchmark(Baseline = true, Description = "00. Baseline — JSON array Deserialize (non-streaming)")]
+    [BenchmarkCategory("Baseline", "Deserialize", "JSONArray")]
+    public void Baseline_JsonArray_Deserialize()
+    {
+        using var buffer = new MemoryStream();
+        JsonSerializer.Serialize(buffer, _arrayData, MyJsonContext.Default.MyTypeArray);
+
+        buffer.Position = 0;
+
+        var _ = JsonSerializer.Deserialize(buffer, MyJsonContext.Default.MyTypeArray);
+    }
+
+
+    // ------------------------------------------------------------
+    // 05. NDJSON Deserialize (Stream)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "05. NDJSON Deserialize (Stream)")]
+    [BenchmarkCategory("Juner.Sequence", "DeserializeAsyncEnumerable", "NDJSON")]
+    public async Task Deserialize_NdJson_Stream()
+    {
+        await using var buffer = new MemoryStream();
+        await SequenceSerializer.SerializeAsync(
+            buffer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines);
+
+        buffer.Position = 0;
+
+        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+            buffer, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines)) { }
+    }
+
+    // ------------------------------------------------------------
+    // 06. NDJSON Deserialize (PipeReader)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "06. NDJSON Deserialize (PipeReader)")]
+    [BenchmarkCategory("Juner.Sequence", "DeserializeAsyncEnumerable", "NDJSON")]
+    public async Task Deserialize_NdJson_PipeReader()
+    {
+        await using var buffer = new MemoryStream();
+        await SequenceSerializer.SerializeAsync(
+            buffer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines);
+
+        buffer.Position = 0;
+
+        var reader = PipeReader.Create(buffer);
+
+        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines)) { }
+
+        await reader.CompleteAsync();
     }
 
     // ------------------------------------------------------------
     // 10. JSON array DeserializeAsyncEnumerable (STJ)
     // ------------------------------------------------------------
     [Benchmark(Description = "10. DeserializeAsyncEnumerable (JSON array)")]
-    [BenchmarkCategory("System.Text.Json", "Deserialize", "JSONArray")]
+    [BenchmarkCategory("System.Text.Json", "DeserializeAsyncEnumerable", "JSONArray")]
     public async Task Deserialize_JsonArray_AsyncEnumerable()
     {
         await using var buffer = new MemoryStream();
-        JsonSerializer.Serialize(
-            buffer,
-            _arrayData,
-            MyJsonContext.Default.MyTypeArray);
+        JsonSerializer.Serialize(buffer, _arrayData, MyJsonContext.Default.MyTypeArray);
 
         buffer.Position = 0;
 
         await foreach (var _ in JsonSerializer.DeserializeAsyncEnumerable<MyType>(
-            buffer,
-            MyJsonContext.Default.Options))
-        {
-        }
+            buffer, MyJsonContext.Default.Options)) { }
     }
 }
+
 
 public class MyType
 {
@@ -235,7 +254,11 @@ public class Program
         var config = DefaultConfig.Instance
             .AddExporter(new JunerMarkdownExporter());
 
-        BenchmarkRunner.Run<Benchmarks>(config, args);
+        BenchmarkRunner.Run([
+            typeof(BenchmarksSerialize), 
+            typeof(BenchmarksDeserialize), 
+            typeof(BenchmarksDeserializeAsyncEnumerable),
+        ], config, args);
     }
 }
 
