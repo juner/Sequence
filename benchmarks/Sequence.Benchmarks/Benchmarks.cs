@@ -1,9 +1,11 @@
-﻿using System.IO.Pipelines;
+﻿using System.Collections.Immutable;
+using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.ConsoleArguments;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
@@ -40,7 +42,7 @@ public class BenchmarksSerialize
     // 00. Baseline — pure IAsyncEnumerable iteration
     // ------------------------------------------------------------
     [Benchmark(Baseline = true, Description = "00. Baseline — pure IAsyncEnumerable iteration")]
-    [BenchmarkCategory("Baseline", "Serialize")]
+    [BenchmarkCategory("Serialize", "Baseline")]
     public async Task Baseline_Serialize()
     {
         await foreach (var _ in _streamData) { }
@@ -50,7 +52,7 @@ public class BenchmarksSerialize
     // 01. NDJSON Serialize (Stream)
     // ------------------------------------------------------------
     [Benchmark(Description = "01. NDJSON Serialize (Stream)")]
-    [BenchmarkCategory("Juner.Sequence", "Serialize", "NDJSON")]
+    [BenchmarkCategory("Serialize", "Juner.Sequence", "NDJSON")]
     public async Task Serialize_NdJson_Stream()
     {
         await using var stream = new MemoryStream();
@@ -62,7 +64,7 @@ public class BenchmarksSerialize
     // 02. JSON array Serialize (non-streaming)
     // ------------------------------------------------------------
     [Benchmark(Description = "02. JSON array Serialize (non-streaming)")]
-    [BenchmarkCategory("System.Text.Json", "Serialize", "JSONArray")]
+    [BenchmarkCategory("Serialize", "System.Text.Json", "JSONArray")]
     public void Serialize_JsonArray()
     {
         using var stream = new MemoryStream();
@@ -70,10 +72,10 @@ public class BenchmarksSerialize
     }
 
     // ------------------------------------------------------------
-    // 04. NDJSON Serialize (PipeWriter)
+    // 03. NDJSON Serialize (PipeWriter)
     // ------------------------------------------------------------
-    [Benchmark(Description = "04. NDJSON Serialize (PipeWriter)")]
-    [BenchmarkCategory("Juner.Sequence", "Serialize", "NDJSON")]
+    [Benchmark(Description = "03. NDJSON Serialize (PipeWriter)")]
+    [BenchmarkCategory("Serialize", "Juner.Sequence", "NDJSON")]
     public async Task Serialize_NdJson_PipeWriter()
     {
         await using var stream = new MemoryStream();
@@ -84,10 +86,10 @@ public class BenchmarksSerialize
     }
 
     // ------------------------------------------------------------
-    // 09. JSON array SerializeAsync (STJ)
+    // 04. JSON array SerializeAsync (STJ)
     // ------------------------------------------------------------
-    [Benchmark(Description = "09. SerializeAsync (JSON array)")]
-    [BenchmarkCategory("System.Text.Json", "Serialize", "JSONArray")]
+    [Benchmark(Description = "04. SerializeAsync (JSON array)")]
+    [BenchmarkCategory("Serialize", "System.Text.Json", "JSONArray")]
     public async Task Serialize_JsonArray_Async()
     {
         await using var stream = new MemoryStream();
@@ -120,7 +122,7 @@ public class BenchmarksDeserialize
     // 00. Baseline — IAsyncEnumerable iteration → array
     // ------------------------------------------------------------
     [Benchmark(Baseline = true, Description = "00. Baseline — Convert IAsyncEnumerable to array")]
-    [BenchmarkCategory("Baseline", "Deserialize")]
+    [BenchmarkCategory("Deserialize", "Baseline")]
     public async Task Baseline_Deserialize()
     {
         var list = new List<MyType>();
@@ -128,10 +130,10 @@ public class BenchmarksDeserialize
     }
 
     // ------------------------------------------------------------
-    // 07. JSON array Deserialize (non-streaming)
+    // 01. JSON array Deserialize (non-streaming)
     // ------------------------------------------------------------
-    [Benchmark(Description = "07. JSON array Deserialize (non-streaming)")]
-    [BenchmarkCategory("System.Text.Json", "Deserialize", "JSONArray")]
+    [Benchmark(Description = "01. JSON array Deserialize (non-streaming)")]
+    [BenchmarkCategory("Deserialize", "System.Text.Json", "JSONArray")]
     public void Deserialize_JsonArray()
     {
         using var buffer = new MemoryStream();
@@ -168,7 +170,7 @@ public class BenchmarksDeserializeAsyncEnumerable
     // 00. Baseline — JSON array Deserialize (non-streaming)
     // ------------------------------------------------------------
     [Benchmark(Baseline = true, Description = "00. Baseline — JSON array Deserialize (non-streaming)")]
-    [BenchmarkCategory("Baseline", "Deserialize", "JSONArray")]
+    [BenchmarkCategory("DeserializeAsyncEnumerable", "Baseline", "JSONArray")]
     public void Baseline_JsonArray_Deserialize()
     {
         using var buffer = new MemoryStream();
@@ -181,10 +183,10 @@ public class BenchmarksDeserializeAsyncEnumerable
 
 
     // ------------------------------------------------------------
-    // 05. NDJSON Deserialize (Stream)
+    // 01. NDJSON Deserialize (Stream)
     // ------------------------------------------------------------
-    [Benchmark(Description = "05. NDJSON Deserialize (Stream)")]
-    [BenchmarkCategory("Juner.Sequence", "DeserializeAsyncEnumerable", "NDJSON")]
+    [Benchmark(Description = "01. NDJSON Deserialize (Stream)")]
+    [BenchmarkCategory("DeserializeAsyncEnumerable", "Juner.Sequence", "NDJSON")]
     public async Task Deserialize_NdJson_Stream()
     {
         await using var buffer = new MemoryStream();
@@ -198,10 +200,10 @@ public class BenchmarksDeserializeAsyncEnumerable
     }
 
     // ------------------------------------------------------------
-    // 06. NDJSON Deserialize (PipeReader)
+    // 02. NDJSON Deserialize (PipeReader)
     // ------------------------------------------------------------
-    [Benchmark(Description = "06. NDJSON Deserialize (PipeReader)")]
-    [BenchmarkCategory("Juner.Sequence", "DeserializeAsyncEnumerable", "NDJSON")]
+    [Benchmark(Description = "02. NDJSON Deserialize (PipeReader)")]
+    [BenchmarkCategory("DeserializeAsyncEnumerable", "Juner.Sequence", "NDJSON")]
     public async Task Deserialize_NdJson_PipeReader()
     {
         await using var buffer = new MemoryStream();
@@ -219,10 +221,10 @@ public class BenchmarksDeserializeAsyncEnumerable
     }
 
     // ------------------------------------------------------------
-    // 10. JSON array DeserializeAsyncEnumerable (STJ)
+    // 03. JSON array DeserializeAsyncEnumerable (STJ)
     // ------------------------------------------------------------
-    [Benchmark(Description = "10. DeserializeAsyncEnumerable (JSON array)")]
-    [BenchmarkCategory("System.Text.Json", "DeserializeAsyncEnumerable", "JSONArray")]
+    [Benchmark(Description = "03. DeserializeAsyncEnumerable (JSON array)")]
+    [BenchmarkCategory("DeserializeAsyncEnumerable", "System.Text.Json", "JSONArray")]
     public async Task Deserialize_JsonArray_AsyncEnumerable()
     {
         await using var buffer = new MemoryStream();
@@ -252,13 +254,10 @@ public class Program
     public static void Main(string[] args)
     {
         var config = DefaultConfig.Instance
-            .AddExporter(new JunerMarkdownExporter());
-
-        BenchmarkRunner.Run([
-            typeof(BenchmarksSerialize), 
-            typeof(BenchmarksDeserialize), 
-            typeof(BenchmarksDeserializeAsyncEnumerable),
-        ], config, args);
+            .AddExporter(new JunerMarkdownExporter())
+            .WithOptions(ConfigOptions.JoinSummary)
+            .WithOptions(ConfigOptions.DisableLogFile);
+        BenchmarkRunner.Run(typeof(BenchmarksSerialize).Assembly, config, args);
     }
 }
 
