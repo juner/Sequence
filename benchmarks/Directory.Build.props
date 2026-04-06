@@ -1,11 +1,9 @@
 <Project>
+  <!-- Inherit root Directory.Build.props (shared settings for all projects) -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,6 +17,8 @@
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
-    <SuppressTfmSupportBuildWarnings>false</SuppressTfmSupportBuildWarnings>
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 </Project>
