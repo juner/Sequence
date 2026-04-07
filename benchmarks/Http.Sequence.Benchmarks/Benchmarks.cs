@@ -30,7 +30,7 @@ public class Benchmarks
     {
         var response = await _client.GetAsync("http://localhost/ndjson");
         var options = SequenceSerializerOptions.JsonLines;
-     
+
         await foreach (var _ in response.Content.ReadSequenceEnumerable(
             MyJsonContext.Default.MyType,
             options))
