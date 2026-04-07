@@ -95,6 +95,58 @@ public class BenchmarksSerialize
         await using var stream = new MemoryStream();
         await JsonSerializer.SerializeAsync(stream, _arrayData, MyJsonContext.Default.MyTypeArray);
     }
+
+    // ------------------------------------------------------------
+    // 05. JSON Lines Serialize (Stream)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "05. JSON Lines Serialize (Stream)")]
+    [BenchmarkCategory("Serialize", "Juner.Sequence", "JSONLines")]
+    public async Task Serialize_JsonLines_Stream()
+    {
+        await using var stream = new MemoryStream();
+        await SequenceSerializer.SerializeAsync(
+            stream, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines);
+    }
+
+    // ------------------------------------------------------------
+    // 06. JSON Lines Serialize (PipeWriter)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "06. JSON Lines Serialize (PipeWriter)")]
+    [BenchmarkCategory("Serialize", "Juner.Sequence", "JSONLines")]
+    public async Task Serialize_JsonLines_PipeWriter()
+    {
+        await using var stream = new MemoryStream();
+        var writer = PipeWriter.Create(stream);
+
+        await SequenceSerializer.SerializeAsync(
+            writer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines);
+    }
+
+    // ------------------------------------------------------------
+    // 07. JSON Sequence Serialize (Stream)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "07. JSON Sequence Serialize (Stream)")]
+    [BenchmarkCategory("Serialize", "Juner.Sequence", "JSONSequence")]
+    public async Task Serialize_JsonSequence_Stream()
+    {
+        await using var stream = new MemoryStream();
+        await SequenceSerializer.SerializeAsync(
+            stream, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonSequence);
+    }
+
+    // ------------------------------------------------------------
+    // 08. JSON Sequence Serialize (PipeWriter)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "08. JSON Sequence Serialize (PipeWriter)")]
+    [BenchmarkCategory("Serialize", "Juner.Sequence", "JSONSequence")]
+    public async Task Serialize_JsonSequence_PipeWriter()
+    {
+        await using var stream = new MemoryStream();
+        var writer = PipeWriter.Create(stream);
+
+        await SequenceSerializer.SerializeAsync(
+            writer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonSequence);
+    }
 }
 
 [CategoriesColumn]
@@ -235,6 +287,82 @@ public class BenchmarksDeserializeAsyncEnumerable
         await foreach (var _ in JsonSerializer.DeserializeAsyncEnumerable<MyType>(
             buffer, MyJsonContext.Default.Options)) { }
     }
+
+    // ------------------------------------------------------------
+    // 04. JSON Lines Deserialize (Stream)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "04. JSON Lines Deserialize (Stream)")]
+    [BenchmarkCategory("DeserializeAsyncEnumerable", "Juner.Sequence", "JSONLines")]
+    public async Task Deserialize_JsonLines_Stream()
+    {
+        await using var buffer = new MemoryStream();
+        await SequenceSerializer.SerializeAsync(
+            buffer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines);
+
+        buffer.Position = 0;
+
+        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+            buffer, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines)) { }
+    }
+
+    // ------------------------------------------------------------
+    // 05. JSON Lines Deserialize (PipeReader)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "05. JSON Lines Deserialize (PipeReader)")]
+    [BenchmarkCategory("DeserializeAsyncEnumerable", "Juner.Sequence", "JSONLines")]
+    public async Task Deserialize_JsonLines_PipeReader()
+    {
+        await using var buffer = new MemoryStream();
+        await SequenceSerializer.SerializeAsync(
+            buffer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines);
+
+        buffer.Position = 0;
+
+        var reader = PipeReader.Create(buffer);
+
+        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonLines)) { }
+
+        await reader.CompleteAsync();
+    }
+
+    // ------------------------------------------------------------
+    // 06. JSON Sequence Deserialize (Stream)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "06. JSON Sequence Deserialize (Stream)")]
+    [BenchmarkCategory("DeserializeAsyncEnumerable", "Juner.Sequence", "JSONSequence")]
+    public async Task Deserialize_JsonSequence_Stream()
+    {
+        await using var buffer = new MemoryStream();
+        await SequenceSerializer.SerializeAsync(
+            buffer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonSequence);
+
+        buffer.Position = 0;
+
+        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+            buffer, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonSequence)) { }
+    }
+
+    // ------------------------------------------------------------
+    // 07. JSON Sequence Deserialize (PipeReader)
+    // ------------------------------------------------------------
+    [Benchmark(Description = "07. JSON Sequence Deserialize (PipeReader)")]
+    [BenchmarkCategory("DeserializeAsyncEnumerable", "Juner.Sequence", "JSONSequence")]
+    public async Task Deserialize_JsonSequence_PipeReader()
+    {
+        await using var buffer = new MemoryStream();
+        await SequenceSerializer.SerializeAsync(
+            buffer, _streamData, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonSequence);
+
+        buffer.Position = 0;
+
+        var reader = PipeReader.Create(buffer);
+
+        await foreach (var _ in SequenceSerializer.DeserializeAsyncEnumerable(
+            reader, MyJsonContext.Default.MyType, SequenceSerializerOptions.JsonSequence)) { }
+
+        await reader.CompleteAsync();
+    }
 }
 
 
@@ -302,6 +430,68 @@ public class JunerMarkdownExporter : IExporter
         sw.WriteLine(logger.GetLog());
 
         sw.WriteLine($"""
+        ## Format comparison
+
+        Juner.Sequence supports three streaming JSON formats:
+
+        - **NDJSON** (`application/x-ndjson`)  
+        One JSON object per line. The most widely used streaming JSON format.
+
+        - **JSON Lines** (`application/jsonl`)  
+        Semantically identical to NDJSON. Different MIME type and file extension, but same framing rules.
+
+        - **JSON Sequence** (`application/json-seq`, RFC 7464)  
+        Each JSON value is framed using the ASCII Record Separator (0x1E) followed by a newline.  
+        Designed for robust streaming over transports where newline-delimited framing is ambiguous.
+
+        ### Why compare these formats?
+
+        Although all three formats represent “streaming JSON”, their **framing rules** differ:
+
+        | Format        | Framing rule                          | Notes |
+        |---------------|----------------------------------------|-------|
+        | NDJSON        | `<json>\n`                             | Most common; simple and efficient |
+        | JSON Lines    | `<json>\n`                             | Same as NDJSON; different MIME/extension |
+        | JSON Sequence | `0x1E <json> \n`                       | RFC 7464 framing; slightly higher overhead |
+
+        These differences affect:
+
+        - **Serialization cost** (extra framing bytes)
+        - **Deserialization cost** (frame detection)
+        - **Memory usage** (buffering behavior)
+        - **First-byte latency** (especially for JSON Sequence)
+
+        ### What this benchmark measures
+
+        This benchmark compares:
+
+        - **Serialize**  
+        Stream / PipeWriter performance for each format
+
+        - **DeserializeAsyncEnumerable**  
+        Streaming deserialization performance for each format  
+        (NDJSON / JSON Lines / JSON Sequence / JSON array via STJ)
+
+        - **Deserialize (non-streaming)**  
+        Baseline JSON array deserialization for reference
+
+        Each benchmark group has its own **Baseline**, so `Ratio` values are meaningful **within the group**.
+
+        ### Key observations
+
+        - **NDJSON / JSON Lines**  
+        Performance is nearly identical, as expected.  
+        Both use newline-delimited framing.
+
+        - **JSON Sequence**  
+        Slightly higher cost due to RFC 7464 framing (`0x1E` prefix),  
+        but still comparable to NDJSON in both throughput and memory usage.
+
+        - **System.Text.Json (JSON array)**  
+        Fastest in raw throughput but **non‑streaming** and requires full buffering.
+
+        This section helps clarify how Juner.Sequence behaves across different streaming JSON formats and why these formats matter in real-world streaming scenarios.
+
         ## Reproduction
 
         ```bash
